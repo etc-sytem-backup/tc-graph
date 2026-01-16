@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>施設駐車場ＥＴＣセキュリティサービス_許可車両通過</title>
+    <link rel="stylesheet" href="/www/common.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+        
+        .notification-badge.success {
+            background: linear-gradient(135deg, var(--color-success) 0%, #10b981 100%);
+            color: white;
+        }
+        
+        /* 左側コンテンツ */
+        .left-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--space-xl);
+            text-align: center;
+            overflow-y: auto;
+        }
+        
+        .status-container {
+            margin-bottom: var(--space-lg);
+            max-width: 800px;
+        }
+        
+        .status-ring {
+            border-top: 3px solid var(--color-success);
+            border-right: 3px solid var(--color-success);
+        }
+        
+        .status-icon {
+            background: linear-gradient(135deg, var(--color-success) 0%, #10b981 100%);
+        }
+        
+        .status-text {
+            margin-bottom: var(--space-lg);
+        }
+        
+        .status-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: var(--space-sm);
+            color: var(--color-gray-900);
+        }
+        
+        .status-description {
+            font-size: 16px;
+            color: var(--color-gray-600);
+            line-height: 1.6;
+        }
+        
+        /* 監視パネル */
+        .monitor-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-xl);
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: var(--space-xl);
+        }
+        
+        .monitor-card {
+            height: 360px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-icon {
+            color: var(--color-success);
+        }
+        
+        /* 右側車両情報 */
+        .right-vehicle-info {
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .vehicle-card {
+            border: 1px solid var(--color-gray-200);
+            animation: slideUp 0.7s ease-out;
+            flex: 1;
+        }
+        
+        .vehicle-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--color-success) 0%, #10b981 100%);
+        }
+        
+        .card-header-large {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--space-xl);
+            padding-bottom: var(--space-lg);
+            border-bottom: 2px solid var(--color-gray-100);
+        }
+        
+        .header-icon {
+            color: var(--color-success);
+        }
+        
+        .detail-label-vertical {
+            color: var(--color-gray-500);
+        }
+        
+        .detail-value-vertical {
+            color: var(--color-gray-800);
+            background: var(--color-gray-50);
+            border-left: 4px solid var(--color-success);
+        }
+        
+        .detail-value-vertical:hover {
+            background: var(--color-gray-100);
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 1200px) {
+            .right-vehicle-info {
+                width: 100%;
+                margin-top: var(--space-xl);
+            }
+            
+            .details-vertical {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--space-lg);
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .monitor-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-header-large {
+                flex-direction: column;
+                gap: var(--space-md);
+                text-align: center;
+            }
+            
+            .header-left {
+                justify-content: center;
+            }
+            
+            .details-vertical {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .left-content {
+                padding: 0;
+            }
+            
+            .vehicle-card {
+                padding: var(--space-lg);
+            }
+            
+            .status-title {
+                font-size: 30px;
+            }
+            
+            .status-description {
+                font-size: 15px;
+            }
+            
+            .detail-value-vertical {
+                font-size: 18px;
+                min-height: 70px;
+                padding: var(--space-md);
+            }
+            
+            .monitor-card {
+                height: 320px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="fade-in">
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="logo-container">
+            <h1 class="system-title">施設駐車場ＥＴＣセキュリティサービス</h1>
+        </div>
+        <div class="header-right">
+            <div class="system-status">
+                <div class="current-time" id="currentTime">YYYY年MM月DD日 HH:MM:SS</div>
+                <div class="notification-badge success">
+                    <i class="fas fa-check-circle"></i>
+                    許可車両を検出
+                </div>
+            </div>
+            <button class="list-button" onclick="location.href='vehicle_list.html'">
+                <i class="fas fa-list"></i>
+                許可車両一覧
+            </button>
+        </div>
+    </header>
+    
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <!-- 左側コンテンツ -->
+        <div class="left-content">
+            <div class="status-container">
+                <div class="status-icon-wrapper">
+                    <div class="status-ring"></div>
+                    <div class="status-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                
+                <div class="status-text">
+                    <h2 class="status-title">許可車両 通過確認</h2>
+                    <p class="status-description">登録済みの許可車両がゲートを通過しました。<br>ゲートは自動で開閉しました。</p>
+                </div>
+            </div>
+            
+            <div class="monitor-panel">
+                <div class="monitor-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h3 class="card-title">ゲート映像</h3>
+                    </div>
+                    <div class="card-content" id="videoFeed">
+                        <i class="fas fa-video-slash"></i> 映像準備中
+                    </div>
+                </div>
+                
+                <div class="monitor-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <h3 class="card-title">最新検出画像</h3>
+                    </div>
+                    <div class="card-content" id="latestImage">
+                        <i class="fas fa-camera"></i> 画像準備中
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右側車両情報（縦配置） -->
+        <div class="right-vehicle-info">
+            <div class="vehicle-card slide-up">
+                <div class="card-header-large">
+                    <div class="header-left">
+                        <div class="header-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <h3 class="header-title">許可車両情報</h3>
+                    </div>
+                </div>
+                
+                <div class="details-vertical">
+                    <div class="detail-item-vertical">
+                        <div class="detail-label-vertical">
+                            <i class="fas fa-id-card"></i>
+                            ＥＴＣ車載器番号
+                        </div>
+                        <div class="detail-value-vertical" id="etcNumber">123456789012</div>
+                    </div>
+                    
+                    <div class="detail-item-vertical">
+                        <div class="detail-label-vertical">
+                            <i class="fas fa-hashtag"></i>
+                            車両ナンバー
+                        </div>
+                        <div class="detail-value-vertical" id="serialNumber">1234</div>
+                    </div>
+                    
+                    <div class="detail-item-vertical">
+                        <div class="detail-label-vertical">
+                            <i class="fas fa-car-side"></i>
+                            車種
+                        </div>
+                        <div class="detail-value-vertical" id="vehicleType">セダン</div>
+                    </div>
+                    
+                    <div class="detail-item-vertical">
+                        <div class="detail-label-vertical">
+                            <i class="fas fa-user"></i>
+                            氏名
+                        </div>
+                        <div class="detail-value-vertical" id="driverName">山田 太郎</div>
+                    </div>
+                    
+                    <div class="detail-item-vertical">
+                        <div class="detail-label-vertical">
+                            <i class="fas fa-building"></i>
+                            部署
+                        </div>
+                        <div class="detail-value-vertical" id="department">営業部 第1課</div>
+                    </div>
+                    
+                    <div class="detail-item-vertical">
+                        <div class="detail-label-vertical">
+                            <i class="fas fa-exchange-alt"></i>
+                            入場/退場
+                        </div>
+                        <div class="detail-value-vertical" id="entryExit">入場</div>
+                    </div>
+                    
+                    <div class="detail-item-vertical">
+                        <div class="detail-label-vertical">
+                            <i class="far fa-clock"></i>
+                            通過時刻
+                        </div>
+                        <div class="detail-value-vertical" id="passingTime">HH:MM:SS</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+    // 車種リスト
+    const vehicleTypes = ['セダン', 'トラック', '軽トラック', 'SUV/MPV', 'バン', 'バス'];
+    
+    // 日時更新
+    function updateDateTime() {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('ja-JP', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        });
+        const timeStr = now.toLocaleTimeString('ja-JP');
+        document.getElementById('currentTime').textContent = `${dateStr} ${timeStr}`;
+        document.getElementById('passingTime').textContent = timeStr;
+    }
+    
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+    
+    // 一定時間後に待機画面に戻る
+    function returnToHomeAfterDelay() {
+        setTimeout(() => {
+            window.location.href = '/home';
+        }, 10000); // 10秒後に待機画面に戻る
+    }
+    
+    // 車両情報の取得と表示
+    document.addEventListener('DOMContentLoaded', function() {
+        // ビデオフィード
+        const videoFeed = document.getElementById('videoFeed');
+        videoFeed.innerHTML = `
+            <video autoplay muted loop style="width:100%; height:100%; object-fit:cover;">
+                <source src="/hls/output.mp4" type="video/mp4">
+            </video>
+        `;
+        
+        // 最新画像
+        const latestImage = document.getElementById('latestImage');
+        latestImage.innerHTML = `
+            <img src="/api/latest-image?t=${new Date().getTime()}" alt="最新車両画像" 
+                 style="width:100%; height:100%; object-fit:cover;"
+                 onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\"fas fa-camera\"></i> 最新画像なし';">`;
+        
+        // 車両情報を取得
+        fetch('/api/current-vehicle')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('車両情報の取得に失敗しました');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data) {
+                    document.getElementById('etcNumber').textContent = data.etcNumber || "N/A";
+                    document.getElementById('serialNumber').textContent = data.serialNumber || "N/A";
+                    document.getElementById('vehicleType').textContent = data.vehicleType || getRandomVehicleType();
+                    document.getElementById('driverName').textContent = data.name || "N/A";
+                    document.getElementById('department').textContent = data.department || "N/A";
+                    document.getElementById('entryExit').textContent = data.isEnter ? "入場" : "退場";
+                }
+            })
+            .catch(error => {
+                console.error('車両情報取得エラー:', error);
+                // デモデータを表示
+                document.getElementById('etcNumber').textContent = "123456789012";
+                document.getElementById('serialNumber').textContent = "5678";
+                document.getElementById('vehicleType').textContent = getRandomVehicleType();
+                document.getElementById('driverName').textContent = "山田 太郎";
+                document.getElementById('department').textContent = "営業部 第1課";
+                document.getElementById('entryExit').textContent = "入場";
+            });
+        
+        // 10秒後に待機画面に戻る
+        returnToHomeAfterDelay();
+    });
+    
+    // ランダムな車種を取得（デモ用）
+    function getRandomVehicleType() {
+        const randomIndex = Math.floor(Math.random() * vehicleTypes.length);
+        return vehicleTypes[randomIndex];
+    }
+    </script>
+</body>
+</html>

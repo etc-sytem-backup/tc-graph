@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>施設駐車場ＥＴＣセキュリティサービス_待機中</title>
+    <link rel="stylesheet" href="/www/common.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-gray-100) 100%);
+        }
+        
+        /* 左側コンテンツ */
+        .left-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow-y: auto;
+        }
+        
+        .gate-status-container {
+            margin-bottom: var(--space-lg);
+            max-width: 800px;
+        }
+        
+        .gate-icon-wrapper {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto var(--space-lg);
+        }
+        
+        .gate-icon-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--color-gray-100);
+            border-radius: 50%;
+            border: 2px dashed var(--color-gray-300);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .gate-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 110px;
+            height: 110px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--color-gray-200);
+        }
+        
+        .gate-icon i {
+            font-size: 44px;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .status-text {
+            margin-bottom: var(--space-lg);
+        }
+        
+        .status-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: var(--space-sm);
+            color: var(--color-gray-900);
+        }
+        
+        .status-description {
+            font-size: 16px;
+            color: var(--color-gray-600);
+            line-height: 1.6;
+        }
+        
+        /* 監視パネル - シングルカード */
+        .monitor-panel {
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: var(--space-xl);
+        }
+        
+        .monitor-card {
+            height: 480px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 右側統計バー - 縦配置 */
+        .right-stats {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+        
+        .stat-item-vertical {
+            text-align: center;
+            padding: var(--space-xl);
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .stat-value-vertical {
+            font-size: 40px;
+            font-weight: 800;
+            margin-bottom: var(--space-sm);
+            font-feature-settings: "tnum";
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* 色分け */
+        .stat-value-vertical.entries { color: var(--color-primary); }
+        .stat-value-vertical.exits { color: #6f42c1; }
+        .stat-value-vertical.inside { color: var(--color-success); }
+        .stat-value-vertical.visitors { color: var(--color-warning); }
+        .stat-value-vertical.unauthorized { color: var(--color-danger); }
+        
+        .stat-label-vertical {
+            color: var(--color-gray-600);
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 1200px) {
+            .right-stats {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                padding-top: 0;
+            }
+            
+            .stat-item-vertical {
+                width: calc(50% - var(--space-lg));
+                min-height: 120px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .left-content {
+                padding: 0;
+            }
+            
+            .gate-icon-wrapper {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .gate-icon {
+                width: 90px;
+                height: 90px;
+            }
+            
+            .monitor-card {
+                height: 320px;
+            }
+            
+            .stat-item-vertical {
+                width: 100%;
+                min-height: 100px;
+                padding: var(--space-lg);
+            }
+            
+            .stat-value-vertical {
+                font-size: 32px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="logo-container">
+            <h1 class="system-title">施設駐車場ＥＴＣセキュリティサービス</h1>
+        </div>
+        <div class="header-right">
+            <div class="system-status">
+                <div class="current-time" id="currentTime">YYYY年MM月DD日 HH:MM:SS</div>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>システム正常稼働中</span>
+                </div>
+            </div>
+            <button class="list-button" onclick="location.href='vehicle_list.html'">
+                <i class="fas fa-list"></i>
+                許可車両一覧
+            </button>
+        </div>
+    </header>
+    
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <!-- 左側コンテンツ -->
+        <div class="left-content">
+            <div class="gate-status-container">
+                <div class="gate-icon-wrapper">
+                    <div class="gate-icon-bg"></div>
+                    <div class="gate-icon">
+                        <i class="fas fa-gate"></i>
+                    </div>
+                </div>
+                
+                <div class="status-text">
+                    <h2 class="status-title">ゲート待機中</h2>
+                    <p class="status-description">ETCアンテナが車両を検出するまでお待ちください。<br>システムは正常に動作しています。</p>
+                </div>
+            </div>
+            
+            <!-- 監視パネル（ゲート映像のみ） -->
+            <div class="monitor-panel">
+                <div class="monitor-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h3 class="card-title">ゲート映像</h3>
+                    </div>
+                    <div class="card-content" id="videoFeed">
+                        <i class="fas fa-video-slash"></i> 映像準備中
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右側統計バー（縦配置） -->
+        <div class="right-stats">
+            <div class="stat-item-vertical">
+                <div class="stat-value-vertical entries" id="todayEntries">0</div>
+                <div class="stat-label-vertical">
+                    <i class="fas fa-sign-in-alt"></i>
+                    入場
+                </div>
+            </div>
+            <div class="stat-item-vertical">
+                <div class="stat-value-vertical exits" id="todayExits">0</div>
+                <div class="stat-label-vertical">
+                    <i class="fas fa-sign-out-alt"></i>
+                    出場
+                </div>
+            </div>
+            <div class="stat-item-vertical">
+                <div class="stat-value-vertical inside" id="currentInside">0</div>
+                <div class="stat-label-vertical">
+                    <i class="fas fa-car"></i>
+                    在庫
+                </div>
+            </div>
+            <div class="stat-item-vertical">
+                <div class="stat-value-vertical visitors" id="visitorCount">0</div>
+                <div class="stat-label-vertical">
+                    <i class="fas fa-users"></i>
+                    搬送車両
+                </div>
+            </div>
+            <div class="stat-item-vertical">
+                <div class="stat-value-vertical unauthorized" id="unauthorizedCount">0</div>
+                <div class="stat-label-vertical">
+                    <i class="fas fa-ban"></i>
+                    来客車両
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+    // 日時更新
+    function updateDateTime() {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('ja-JP', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        });
+        const timeStr = now.toLocaleTimeString('ja-JP');
+        document.getElementById('currentTime').textContent = `${dateStr} ${timeStr}`;
+    }
+    
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+    
+    // 車両検出の監視
+    function checkVehicleDetection() {
+        fetch('/api/vehicle-detected')
+            .then(response => response.json())
+            .then(data => {
+                if (data.detected && data.redirect) {
+                    // 車両が検出されたら適切な画面へ遷移
+                    window.location.href = data.redirect;
+                }
+                // 車両未検出の場合はそのまま待機画面を維持
+            })
+            .catch(error => {
+                console.error('車両検出チェックエラー:', error);
+            });
+    }
+    
+    // システム状態更新
+    function updateSystemStatus() {
+        // 統計情報
+        fetch('/api/stats')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('todayEntries').textContent = data.today_entries || 0;
+                document.getElementById('todayExits').textContent = data.today_exits || 0;
+                document.getElementById('currentInside').textContent = data.current_inside || 0;
+                document.getElementById('visitorCount').textContent = data.visitor_count || 0;
+                document.getElementById('unauthorizedCount').textContent = data.unauthorized_count || 0;
+            })
+            .catch(error => {
+                console.error('統計情報の取得エラー:', error);
+                // デモ用のダミーデータ
+                document.getElementById('todayEntries').textContent = Math.floor(Math.random() * 20) + 30;
+                document.getElementById('todayExits').textContent = Math.floor(Math.random() * 15) + 25;
+                document.getElementById('currentInside').textContent = Math.floor(Math.random() * 10) + 5;
+                document.getElementById('visitorCount').textContent = Math.floor(Math.random() * 5);
+                document.getElementById('unauthorizedCount').textContent = Math.floor(Math.random() * 3);
+            });
+        
+        // ビデオフィード
+        const videoFeed = document.getElementById('videoFeed');
+        // 既にビデオが設定されていない場合のみ設定
+        if (!videoFeed.querySelector('video')) {
+            videoFeed.innerHTML = `
+                <video autoplay muted loop style="width:100%; height:100%; object-fit:cover;">
+                    <source src="/hls/output.mp4" type="video/mp4">
+                    お使いのブラウザは動画をサポートしていません。
+                </video>
+            `;
+        }
+    }
+    
+    // 初期化と定期的な更新
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSystemStatus();
+        setInterval(updateSystemStatus, 5000); // 5秒ごとに統計情報を更新
+        setInterval(checkVehicleDetection, 2000); // 2秒ごとに車両検出をチェック
+    });
+    </script>
+</body>
+</html>

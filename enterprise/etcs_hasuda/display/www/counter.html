@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display</title>
+
+    <!-- CSS読み込み -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+    <!-- bootstrap js読み込み -->
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <!-- 自作関数読込み -->
+    <script src="./js/script.js"></script>
+
+    <div class="container my-2">
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title">アンテナ１号機</h4>
+                <div class="row mt-1 position-relative">
+                    <div id="l-mansya-flag" class="font-6_5rem text-danger position-absolute top-0 start-0"></div>
+                    <div id="l-manku-ratio" class="col text-primary font-6_5rem pl-7rem text-center"></div>
+                    <div class="col font-6_5rem text-center">
+                        <span id="l-car-cnt">120台</span>
+                    </div>
+                </div>
+              </div>
+        </div>
+
+        <div class="card mt-2">
+            <div class="card-body">
+                <h4 class="card-title">アンテナ２号機</h4>
+                <div class="row mt-1 position-relative">
+                    <div id="s-mansya-flag" class="font-6_5rem text-danger position-absolute top-0 start-0"></div>
+                    <div id="s-manku-ratio" class="col text-primary font-6_5rem pl-7rem text-center"></div>
+                    <div class="col font-6_5rem text-center">
+                        <span id="s-car-cnt">120台</span>
+                    </div>
+                </div>
+              </div>
+        </div>
+
+        <div class="card mt-2">
+            <div class="card-body">
+                <h4 class="card-title">アンテナ３号機</h4>
+                <div class="row mt-1 position-relative">
+                    <div id="s-mansya-flag" class="font-6_5rem text-danger position-absolute top-0 start-0"></div>
+                    <div id="s-manku-ratio" class="col text-primary font-6_5rem pl-7rem text-center"></div>
+                    <div class="col font-6_5rem text-center">
+                      <span id="s-car-cnt">100台</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title">利得率</h4>
+                <div class="row">
+                    <div class="col">
+                        <div class="card mt-1">
+                            <div class="card-body">
+                                <h4 class="card-title">１号機〜２号機</h4>
+                                <div id="l-pass-cnt" class="font-5rem text-center">100%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card mt-1">
+                            <div class="card-body">
+                                <h4 class="card-title">２号機〜３号機</h4>
+                                <div id="s-pass-cnt" class="font-5rem text-center">83%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
+            </div>
+        </div>
+        <div class="last-receive-time">
+            最終受信：
+            <span id="last-receive-time-main">---</span>
+        </div>
+    </div>
+    <div class="card float-menu">
+        <div class="card-body">
+            <nav class="nav flex-column">
+                <h6>Menu</h6>
+                <a class="nav-link" href="index.html">メイン</a>
+                <a class="nav-link" href="counter.html">断面交通量</a>
+                <a class="nav-link" href="average.html">統計（平均）</a>
+                <a class="nav-link" href="table.html">統計（一覧）</a>
+                <a class="nav-link" href="reverse.html">統計（逆走）</a>
+                <a class="nav-link" href="passage.html">断面交通量</a>
+                <a class="nav-link" href="settings.html">設定</a>
+            </nav>
+        </div>
+    </div>
+</body>
+</html>

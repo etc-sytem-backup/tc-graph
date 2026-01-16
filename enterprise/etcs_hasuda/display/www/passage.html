@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display</title>
+
+    <!-- CSS読み込み -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+
+<body>
+    <!-- bootstrap js読み込み -->
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <!-- 自作関数読込み -->
+    <script src="./js/script.js"></script>
+
+    <div class="container my-2">
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title">アンテナ1号機</h4>
+                <div class="row mt-1 position-relative">
+                    <div class="col font-6_5rem text-center">
+                        <span id="ant-1-cnt">-</span>台
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-2">
+            <div class="card-body">
+                <h4 class="card-title">アンテナ2号機</h4>
+                <div class="row mt-1 position-relative">
+                    <div class="col font-6_5rem text-center">
+                        <span id="ant-2-cnt">-</span>台
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title">アンテナ3号機</h4>
+                <div class="row mt-1 position-relative">
+                    <div class="col font-6_5rem text-center">
+                        <span id="ant-3-cnt">-</span>台
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="button" class="btn btn-danger py-2 px-4 me-5 font-2rem"
+                onclick="sendPassageResetCmd()">リセット</button>
+        </div>
+        <div class="last-receive-time">
+            最終受信：
+            <span id="last-receive-time-passage">---</span>
+        </div>
+    </div>
+    <div class="card float-menu">
+        <div class="card-body">
+            <nav class="nav flex-column">
+                <h6>Menu</h6>
+                <a class="nav-link" href="index.html">メイン</a>
+                <a class="nav-link" href="average.html">統計（平均）</a>
+                <a class="nav-link" href="table.html">統計（一覧）</a>
+                <a class="nav-link" href="reverse.html">統計（逆走）</a>
+                <a class="nav-link" href="passage.html">断面交通量</a>
+                <a class="nav-link" href="settings.html">設定</a>
+            </nav>
+        </div>
+    </div>
+</body>
+
+</html>

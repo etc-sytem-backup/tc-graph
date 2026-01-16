@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>施設駐車場ＥＴＣセキュリティサービス_許可車両一覧</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        body {
+            background-color: var(--color-gray-50);
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .main-container {
+            padding: var(--space-2xl);
+            max-width: 1800px;
+            margin: 0 auto;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: var(--space-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        .page-subtitle {
+            font-size: 18px;
+            color: var(--color-gray-600);
+            margin-bottom: var(--space-xl);
+        }
+        
+        /* コントロールバー */
+        .controls-bar {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-xl);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-lg);
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            flex: 1;
+            max-width: 550px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: var(--space-md) var(--space-lg);
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--border-radius-md);
+            font-size: 16px;
+            transition: var(--transition-base);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            padding: var(--space-md) var(--space-lg);
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--border-radius-md);
+            font-size: 16px;
+            background: white;
+            color: var(--color-gray-700);
+            cursor: pointer;
+            min-width: 160px;
+        }
+        
+        /* テーブル */
+        .table-container {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--space-2xl);
+            position: relative;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+            color: white;
+        }
+        
+        th {
+            padding: var(--space-lg);
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+            white-space: nowrap;
+            color: white;
+        }
+        
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color var(--transition-base);
+        }
+        
+        th.sortable:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        th i {
+            margin-left: var(--space-sm);
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid var(--color-gray-100);
+            transition: background-color var(--transition-base);
+            cursor: pointer;
+        }
+        
+        tbody tr:hover {
+            background-color: var(--color-gray-50);
+        }
+        
+        tbody tr.selected {
+            background-color: #e8f4ff;
+        }
+        
+        td {
+            padding: var(--space-lg);
+            font-size: 15px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 80px;
+        }
+        
+        .status-in {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-out {
+            background: #e2d9f3;
+            color: #38235c;
+        }
+        
+        .unauthorized-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 100px;
+        }
+        
+        .unauthorized-yes {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .unauthorized-no {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .category-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 80px;
+        }
+        
+        .category-employee {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .category-delivery {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .category-visitor {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .etc-number {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--color-gray-800);
+        }
+        
+        .plate-number {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--color-gray-800);
+        }
+        
+        .vehicle-type {
+            font-weight: 500;
+            color: var(--color-gray-700);
+        }
+        
+        .checkbox-cell {
+            width: 50px;
+            text-align: center;
+        }
+        
+        .checkbox-cell input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        /* アクションボタン */
+        .action-buttons {
+            position: fixed;
+            right: var(--space-2xl);
+            bottom: var(--space-2xl);
+            display: flex;
+            gap: var(--space-md);
+            z-index: 100;
+        }
+        
+        .action-btn {
+            padding: var(--space-md) var(--space-xl);
+            border-radius: var(--border-radius-full);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            transition: var(--transition-base);
+            border: none;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .action-btn.unauthorized-btn {
+            background: linear-gradient(135deg, var(--color-warning) 0%, #f59e0b 100%);
+            color: white;
+        }
+        
+        .action-btn.unauthorized-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(217, 119, 6, 0.3);
+        }
+        
+        .action-btn.delete-btn {
+            background: linear-gradient(135deg, var(--color-danger) 0%, #ef4444 100%);
+            color: white;
+        }
+        
+        .action-btn.delete-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+        }
+        
+        .action-btn.register-btn {
+            background: linear-gradient(135deg, var(--color-success) 0%, #10b981 100%);
+            color: white;
+        }
+        
+        .action-btn.register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.3);
+        }
+        
+        /* ページネーション */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-top: var(--space-xl);
+        }
+        
+        .page-btn {
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--color-gray-200);
+            background: white;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: var(--transition-base);
+        }
+        
+        .page-btn:hover {
+            background: var(--color-gray-50);
+        }
+        
+        .page-btn.active {
+            background: var(--color-primary-light);
+            color: white;
+            border-color: var(--color-primary-light);
+        }
+        
+        .page-info {
+            margin-left: var(--space-lg);
+            color: var(--color-gray-600);
+        }
+        
+        /* モーダルスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: var(--space-2xl);
+            border-radius: var(--border-radius-xl);
+            width: 90%;
+            max-width: 600px;
+            box-shadow: var(--shadow-xl);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-xl);
+        }
+        
+        .modal-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        .close-modal {
+            font-size: 32px;
+            color: var(--color-gray-400);
+            cursor: pointer;
+            transition: color var(--transition-base);
+        }
+        
+        .close-modal:hover {
+            color: var(--color-gray-700);
+        }
+        
+        .form-group {
+            margin-bottom: var(--space-lg);
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: var(--space-sm);
+            font-weight: 600;
+            color: var(--color-gray-700);
+            font-size: 16px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: var(--space-md);
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--border-radius-md);
+            font-size: 16px;
+            transition: var(--transition-base);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: var(--space-md);
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--border-radius-md);
+            font-size: 16px;
+            background: white;
+            color: var(--color-gray-700);
+            cursor: pointer;
+            transition: var(--transition-base);
+        }
+        
+        .form-select:focus {
+            outline: none;
+            border-color: var(--color-primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-md);
+            margin-top: var(--space-xl);
+        }
+        
+        .form-btn {
+            padding: var(--space-md) var(--space-xl);
+            border-radius: var(--border-radius-md);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-base);
+            border: none;
+            min-width: 120px;
+        }
+        
+        .form-btn.cancel {
+            background: var(--color-gray-100);
+            color: var(--color-gray-700);
+            border: 2px solid var(--color-gray-300);
+        }
+        
+        .form-btn.cancel:hover {
+            background: var(--color-gray-200);
+        }
+        
+        .form-btn.submit {
+            background: var(--color-primary-light);
+            color: white;
+        }
+        
+        .form-btn.submit:hover {
+            background: var(--color-primary);
+        }
+        
+        /* 編集モーダル */
+        .edit-modal .modal-content {
+            max-width: 700px;
+        }
+        
+        .edit-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-lg);
+        }
+        
+        .form-checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+        
+        .form-checkbox-label {
+            font-weight: 500;
+            color: var(--color-gray-700);
+            cursor: pointer;
+        }
+        
+        /* 必須フィールドのスタイル */
+        .required-field::after {
+            content: " *";
+            color: var(--color-danger);
+        }
+        
+        /* バリデーションエラー時のスタイル */
+        .form-input.error {
+            border-color: var(--color-danger);
+        }
+        
+        .form-input.error:focus {
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+        
+        .error-message {
+            color: var(--color-danger);
+            font-size: 14px;
+            margin-top: var(--space-xs);
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        /* レスポンシブ対応 */
+        @media (max-width: 1200px) {
+            .main-container {
+                padding: var(--space-xl);
+                max-width: 100%;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 1400px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .edit-form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                padding: var(--space-md);
+                flex-direction: column;
+                gap: var(--space-md);
+                height: auto;
+                min-height: 80px;
+            }
+            
+            .header-right {
+                flex-direction: column;
+                gap: var(--space-sm);
+                align-items: center;
+                width: 100%;
+            }
+            
+            .nav-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .controls-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box, .filter-group {
+                max-width: 100%;
+            }
+            
+            .action-buttons {
+                position: static;
+                margin-top: var(--space-xl);
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .page-title {
+                font-size: 26px;
+            }
+            
+            .page-subtitle {
+                font-size: 16px;
+            }
+            
+            .main-container {
+                padding: var(--space-lg);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .modal-content {
+                padding: var(--space-lg);
+                width: 95%;
+            }
+            
+            .filter-select {
+                min-width: 100%;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="logo-container">
+            <h1 class="system-title">施設駐車場ＥＴＣセキュリティサービス</h1>
+        </div>
+        <div class="header-right">
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="location.href='home_dashboard.html'">
+                    <i class="fas fa-home"></i>
+                    ホーム
+                </button>
+                <button class="nav-btn" onclick="location.reload()">
+                    <i class="fas fa-sync-alt"></i>
+                    更新
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- メインコンテンツ -->
+    <div class="main-container">
+        <div class="page-title">
+            <i class="fas fa-car"></i>
+            許可車両一覧
+        </div>
+        <div class="page-subtitle">
+            登録済みの許可車両の一覧と管理を行います。検索やフィルターを使用して必要な情報を素早く見つけることができます。
+        </div>
+        
+        <!-- コントロールバー -->
+        <div class="controls-bar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="ＥＴＣ車載器番号、車両ナンバー、氏名、部署、車種で検索...">
+            </div>
+            <div class="filter-group">
+                <select id="statusFilter" class="filter-select">
+                    <option value="all">すべての状態</option>
+                    <option value="in">入場中のみ</option>
+                    <option value="out">出場のみ</option>
+                </select>
+                <select id="departmentFilter" class="filter-select">
+                    <option value="all">すべての部署</option>
+                    <option value="営業１課">営業１課</option>
+                    <option value="営業２課">営業２課</option>
+                    <option value="開発部">開発部</option>
+                    <option value="総務部">総務部</option>
+                    <option value="車載器開発部">車載器開発部</option>
+                </select>
+                <select id="vehicleTypeFilter" class="filter-select">
+                    <option value="all">すべての車種</option>
+                    <option value="セダン">セダン</option>
+                    <option value="トラック">トラック</option>
+                    <option value="軽トラック">軽トラック</option>
+                    <option value="SUV/MPV">SUV/MPV</option>
+                    <option value="バン">バン</option>
+                    <option value="バス">バス</option>
+                </select>
+                <select id="unauthorizedFilter" class="filter-select">
+                    <option value="all">すべての許可状態</option>
+                    <option value="authorized">許可車両のみ</option>
+                    <option value="unauthorized">非許可車両のみ</option>
+                </select>
+                <button class="nav-btn" onclick="exportToCSV()">
+                    <i class="fas fa-download"></i>
+                    CSV出力
+                </button>
+            </div>
+        </div>
+        
+        <!-- テーブル -->
+        <div class="table-container">
+            <table id="carsTable">
+                <thead>
+                    <tr>
+                        <th class="checkbox-cell">
+                            <input type="checkbox" id="selectAll">
+                        </th>
+                        <th class="sortable" data-sort="category">
+                            区分 <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="etcNumber">
+                            ＥＴＣ車載器番号 <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="plateNumber">
+                            車両ナンバー <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="vehicleType">
+                            車種 <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="name">
+                            氏名 <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="department">
+                            部署 <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="status">
+                            状態 <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="entryTime">
+                            入場時刻 <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="exitTime">
+                            出場時刻 <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="stayTime">
+                            在庫時間 <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="unauthorizedStatus">
+                            許可状態 <i class="fas fa-sort"></i>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- データはJavaScriptで動的に挿入 -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- ページネーション -->
+        <div class="pagination">
+            <button class="page-btn" id="prevPage"><i class="fas fa-chevron-left"></i></button>
+            <span id="pageNumbers"></span>
+            <button class="page-btn" id="nextPage"><i class="fas fa-chevron-right"></i></button>
+            <span class="page-info" id="pageInfo"></span>
+        </div>
+    </div>
+    
+    <!-- アクションボタン -->
+    <div class="action-buttons">
+        <button class="action-btn unauthorized-btn" id="unauthorizedBtn" disabled>
+            <i class="fas fa-ban"></i>
+            非許可車両に設定
+        </button>
+        <button class="action-btn delete-btn" id="deleteBtn" disabled>
+            <i class="fas fa-trash-alt"></i>
+            選択項目を削除
+        </button>
+        <button class="action-btn register-btn" id="registerBtn">
+            <i class="fas fa-plus-circle"></i>
+            新規登録
+        </button>
+    </div>
+    
+    <!-- 新規登録モーダル -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-car"></i>
+                    新規車両登録
+                </div>
+                <span class="close-modal">&times;</span>
+            </div>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label required-field" for="modalEtcNumber">ＥＴＣ車載器番号</label>
+                    <input type="text" id="modalEtcNumber" class="form-input" 
+                           maxlength="12" placeholder="例: 123456789012">
+                    <div class="error-message" id="etcNumberError"></div>
+                    <small class="form-text">12桁の数字で入力してください</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required-field" for="modalPlateNumber">車両ナンバー</label>
+                    <input type="text" id="modalPlateNumber" class="form-input" 
+                           maxlength="4" placeholder="例: 1234">
+                    <div class="error-message" id="plateNumberError"></div>
+                    <small class="form-text">1〜4桁の数字で入力してください</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="modalVehicleType">車種</label>
+                    <select id="modalVehicleType" class="form-select">
+                        <option value="">車種を選択</option>
+                        <option value="セダン">セダン</option>
+                        <option value="トラック">トラック</option>
+                        <option value="軽トラック">軽トラック</option>
+                        <option value="SUV/MPV">SUV/MPV</option>
+                        <option value="バン">バン</option>
+                        <option value="バス">バス</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="modalName">氏名</label>
+                    <input type="text" id="modalName" class="form-input" 
+                           placeholder="例: 山田 太郎">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="modalDepartment">部署</label>
+                    <input type="text" id="modalDepartment" class="form-input" 
+                           placeholder="例: 営業部 第1課">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="modalCategory">区分</label>
+                    <select id="modalCategory" class="form-select">
+                        <option value="従業員">従業員</option>
+                        <option value="搬送">搬送</option>
+                        <option value="来客">来客</option>
+                    </select>
+                </div>
+                <div class="form-checkbox-group">
+                    <input type="checkbox" id="modalIsUnauthorized" class="form-input">
+                    <label class="form-checkbox-label" for="modalIsUnauthorized">
+                        非許可車両として登録する
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="form-btn cancel" onclick="closeRegisterModal()">キャンセル</button>
+                    <button type="submit" class="form-btn submit">登録</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 編集モーダル -->
+    <div id="editModal" class="modal edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-edit"></i>
+                    車両情報編集
+                </div>
+                <span class="close-modal" onclick="closeEditModal()">&times;</span>
+            </div>
+            <form id="editForm">
+                <div class="edit-form-grid">
+                    <div class="form-group">
+                        <label class="form-label required-field" for="editEtcNumber">ＥＴＣ車載器番号</label>
+                        <input type="text" id="editEtcNumber" class="form-input" 
+                               maxlength="12" placeholder="例: 123456789012" readonly>
+                        <div class="error-message" id="editEtcNumberError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required-field" for="editPlateNumber">車両ナンバー</label>
+                        <input type="text" id="editPlateNumber" class="form-input" 
+                               maxlength="4" placeholder="例: 1234">
+                        <div class="error-message" id="editPlateNumberError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editVehicleType">車種</label>
+                        <select id="editVehicleType" class="form-select">
+                            <option value="">車種を選択</option>
+                            <option value="セダン">セダン</option>
+                            <option value="トラック">トラック</option>
+                            <option value="軽トラック">軽トラック</option>
+                            <option value="SUV/MPV">SUV/MPV</option>
+                            <option value="バン">バン</option>
+                            <option value="バス">バス</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editName">氏名</label>
+                        <input type="text" id="editName" class="form-input" 
+                               placeholder="例: 山田 太郎">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editDepartment">部署</label>
+                        <input type="text" id="editDepartment" class="form-input" 
+                               placeholder="例: 営業部 第1課">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editCategory">区分</label>
+                        <select id="editCategory" class="form-select">
+                            <option value="従業員">従業員</option>
+                            <option value="搬送">搬送</option>
+                            <option value="来客">来客</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editStatus">状態</label>
+                        <select id="editStatus" class="form-select">
+                            <option value="入場">入場</option>
+                            <option value="出場">出場</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editEntryTime">入場時刻</label>
+                        <input type="time" id="editEntryTime" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editExitTime">出場時刻</label>
+                        <input type="time" id="editExitTime" class="form-input">
+                    </div>
+                </div>
+                <div class="form-checkbox-group">
+                    <input type="checkbox" id="editIsUnauthorized" class="form-input">
+                    <label class="form-checkbox-label" for="editIsUnauthorized">
+                        非許可車両として設定する
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="form-btn cancel" onclick="closeEditModal()">キャンセル</button>
+                    <button type="submit" class="form-btn submit">更新</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // グローバル変数
+        let allCars = [];
+        let filteredCars = [];
+        let currentPage = 1;
+        const pageSize = 20;
+        let sortColumn = 'etcNumber';
+        let sortDirection = 'asc';
+        let selectedCarId = null;
+        
+        // 車種リスト
+        const vehicleTypes = ['セダン', 'トラック', '軽トラック', 'SUV/MPV', 'バン', 'バス'];
+        
+        // 区分リスト
+        const categories = ['従業員', '搬送', '来客'];
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCarsData();
+            setupEventListeners();
+            
+            // モーダル表示時にフォームをリセット
+            document.getElementById('registerBtn').addEventListener('click', function() {
+                resetRegisterForm();
+                openRegisterModal();
+            });
+        });
+        
+        // データ読み込み
+        async function loadCarsData() {
+            try {
+                const response = await fetch('/api/cars');
+                allCars = await response.json();
+                // 許可状態の追加（デモ用）
+                allCars.forEach(car => {
+                    if (!car.hasOwnProperty('isUnauthorized')) {
+                        car.isUnauthorized = Math.random() < 0.2; // 20%を非許可車両として設定
+                    }
+                    // 車種の追加（デモ用）
+                    if (!car.hasOwnProperty('VehicleType')) {
+                        car.VehicleType = getRandomVehicleType();
+                    }
+                    // 区分の追加（デモ用）
+                    if (!car.hasOwnProperty('Category')) {
+                        car.Category = getRandomCategory();
+                    }
+                });
+                filterAndSortCars();
+                renderTable();
+            } catch (error) {
+                console.error('データ読み込みエラー:', error);
+                // エラー時のフォールバックデータ（改良版）
+                allCars = [
+                    {id: 1, ETCNumber: "017120010814", PlateNumber: "2814", VehicleType: "軽トラック", Name: "大川声美", Department: "車載器開発部", Status: "入場", EntryTime: "16:05", ExitTime: "", StayTime: "", isUnauthorized: false, Category: "従業員"},
+                    {id: 2, ETCNumber: "014147200749", PlateNumber: "7749", VehicleType: "大型", Name: "水上運輸", Department: "登録済み", Status: "入場", EntryTime: "16:11", ExitTime: "", StayTime: "", isUnauthorized: false, Category: "搬送"},
+                    {id: 3, ETCNumber: "123456789012", PlateNumber: "2", VehicleType: "セダン", Name: "伊東大貴", Department: "営業２課", Status: "出場", EntryTime: "09:01", ExitTime: "18:12", StayTime: "9時間11分", isUnauthorized: false, Category: "従業員"},
+                    {id: 4, ETCNumber: "298375952464", PlateNumber: "7464", VehicleType: "セダン", Name: "遠藤良都", Department: "開発部", Status: "入場", EntryTime: "08:14", ExitTime: "", StayTime: "", isUnauthorized: false, Category: "従業員"},
+                    {id: 5, ETCNumber: "295492755322", PlateNumber: "22", VehicleType: "トラック", Name: "三田彰", Department: "総務部", Status: "入場", EntryTime: "07:40", ExitTime: "", StayTime: "", isUnauthorized: true, Category: "従業員"},
+                    {id: 6, ETCNumber: "192406063425", PlateNumber: "9425", VehicleType: "セダン", Name: "森美南", Department: "営業１課", Status: "出場", EntryTime: "08:30", ExitTime: "17:30", StayTime: "9時間00分", isUnauthorized: false, Category: "従業員"},
+                    {id: 7, ETCNumber: "002452940322", PlateNumber: "3622", VehicleType: "バン", Name: "相川沙羅", Department: "営業１課", Status: "入場", EntryTime: "09:43", ExitTime: "", StayTime: "", isUnauthorized: false, Category: "従業員"},
+                    {id: 8, ETCNumber: "139603604465", PlateNumber: "4695", VehicleType: "セダン", Name: "鹿島姫香", Department: "営業１課", Status: "入場", EntryTime: "07:11", ExitTime: "", StayTime: "", isUnauthorized: true, Category: "従業員"},
+                    {id: 9, ETCNumber: "905356322468", PlateNumber: "4683", VehicleType: "SUV/MPV", Name: "佐倉楓", Department: "営業２課", Status: "出場", EntryTime: "09:28", ExitTime: "18:39", StayTime: "9時間11分", isUnauthorized: false, Category: "搬送"},
+                    {id: 10, ETCNumber: "835029604779", PlateNumber: "7279", VehicleType: "バス", Name: "谷中駿", Department: "営業２課", Status: "出場", EntryTime: "07:20", ExitTime: "19:42", StayTime: "12時間22分", isUnauthorized: false, Category: "来客"}
+                ];
+                filterAndSortCars();
+                renderTable();
+            }
+        }
+        
+        // フィルターとソート
+        function filterAndSortCars() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const departmentFilter = document.getElementById('departmentFilter').value;
+            const vehicleTypeFilter = document.getElementById('vehicleTypeFilter').value;
+            const unauthorizedFilter = document.getElementById('unauthorizedFilter').value;
+            
+            filteredCars = allCars.filter(car => {
+                // 検索条件
+                const matchesSearch = !searchTerm || 
+                    car.ETCNumber.toLowerCase().includes(searchTerm) ||
+                    (car.PlateNumber && car.PlateNumber.includes(searchTerm)) ||
+                    (car.VehicleType && car.VehicleType.toLowerCase().includes(searchTerm)) ||
+                    car.Name.toLowerCase().includes(searchTerm) ||
+                    car.Department.toLowerCase().includes(searchTerm) ||
+                    (car.Category && car.Category.toLowerCase().includes(searchTerm));
+                
+                // ステータスフィルター
+                const matchesStatus = statusFilter === 'all' || 
+                    (statusFilter === 'in' && car.Status === '入場') ||
+                    (statusFilter === 'out' && car.Status === '出場');
+                
+                // 部署フィルター
+                const matchesDepartment = departmentFilter === 'all' || 
+                    car.Department === departmentFilter;
+                
+                // 車種フィルター
+                const matchesVehicleType = vehicleTypeFilter === 'all' || 
+                    car.VehicleType === vehicleTypeFilter;
+                
+                // 許可状態フィルター
+                const matchesUnauthorized = unauthorizedFilter === 'all' ||
+                    (unauthorizedFilter === 'authorized' && !car.isUnauthorized) ||
+                    (unauthorizedFilter === 'unauthorized' && car.isUnauthorized);
+                
+                return matchesSearch && matchesStatus && matchesDepartment && matchesVehicleType && matchesUnauthorized;
+            });
+            
+            // ソート
+            filteredCars.sort((a, b) => {
+                let aValue, bValue;
+                
+                if (sortColumn === 'unauthorizedStatus') {
+                    aValue = a.isUnauthorized ? 1 : 0;
+                    bValue = b.isUnauthorized ? 1 : 0;
+                } else if (sortColumn === 'category') {
+                    // 区分のソート
+                    aValue = categories.indexOf(a.Category || '従業員');
+                    bValue = categories.indexOf(b.Category || '従業員');
+                } else if (sortColumn === 'stayTime') {
+                    // 滞在時間の特別なソート処理
+                    aValue = parseStayTime(a.StayTime);
+                    bValue = parseStayTime(b.StayTime);
+                } else if (sortColumn === 'plateNumber') {
+                    // 車両ナンバーの数値ソート
+                    aValue = parseInt(a.PlateNumber) || 0;
+                    bValue = parseInt(b.PlateNumber) || 0;
+                } else if (sortColumn === 'vehicleType') {
+                    // 車種のソート（定義された順序で）
+                    aValue = vehicleTypes.indexOf(a.VehicleType);
+                    bValue = vehicleTypes.indexOf(b.VehicleType);
+                } else {
+                    aValue = a[sortColumn] || '';
+                    bValue = b[sortColumn] || '';
+                }
+                
+                if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+                if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        
+        // 滞在時間を分に変換
+        function parseStayTime(stayTime) {
+            if (!stayTime) return 0;
+            const match = stayTime.match(/(\d+)時間(\d+)分/);
+            if (match) {
+                return parseInt(match[1]) * 60 + parseInt(match[2]);
+            }
+            return 0;
+        }
+        
+        // テーブルレンダリング
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            const startIndex = (currentPage - 1) * pageSize;
+            const pageCars = filteredCars.slice(startIndex, startIndex + pageSize);
+            
+            tableBody.innerHTML = '';
+            
+            pageCars.forEach(car => {
+                const row = document.createElement('tr');
+                row.dataset.id = car.id || car.ETCNumber;
+                row.innerHTML = `
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="row-checkbox" data-id="${car.id || car.ETCNumber}">
+                    </td>
+                    <td>
+                        <span class="category-badge category-${getCategoryClass(car.Category)}">
+                            ${car.Category || '従業員'}
+                        </span>
+                    </td>
+                    <td class="etc-number">${car.ETCNumber}</td>
+                    <td class="plate-number">${car.PlateNumber || '未登録'}</td>
+                    <td class="vehicle-type">${car.VehicleType || '未設定'}</td>
+                    <td>${car.Name}</td>
+                    <td>${car.Department}</td>
+                    <td>
+                        <span class="status-badge status-${car.Status === '入場' ? 'in' : 'out'}">
+                            ${car.Status}
+                        </span>
+                    </td>
+                    <td>${car.EntryTime || '-'}</td>
+                    <td>${car.ExitTime || '-'}</td>
+                    <td>${car.StayTime || '-'}</td>
+                    <td>
+                        <span class="unauthorized-badge unauthorized-${car.isUnauthorized ? 'yes' : 'no'}">
+                            ${car.isUnauthorized ? '非許可' : '許可'}
+                        </span>
+                    </td>
+                `;
+                // 行クリックイベント
+                row.addEventListener('click', (e) => {
+                    if (!e.target.closest('.checkbox-cell')) {
+                        openEditModal(car);
+                    }
+                });
+                tableBody.appendChild(row);
+            });
+            
+            updatePagination();
+            updateActionButtons();
+        }
+        
+        // 区分に応じたクラス名を取得
+        function getCategoryClass(category) {
+            switch(category) {
+                case '従業員': return 'employee';
+                case '搬送': return 'delivery';
+                case '来客': return 'visitor';
+                default: return 'employee';
+            }
+        }
+        
+        // ページネーション更新
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredCars.length / pageSize);
+            const pageNumbers = document.getElementById('pageNumbers');
+            const pageInfo = document.getElementById('pageInfo');
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+            
+            // ページ番号生成
+            let pageHtml = '';
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                pageHtml += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            
+            pageNumbers.innerHTML = pageHtml;
+            
+            // ページ情報
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(currentPage * pageSize, filteredCars.length);
+            pageInfo.textContent = `全 ${filteredCars.length} 件中 ${startItem}-${endItem} 件を表示`;
+            
+            // ボタンの有効/無効
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+        }
+        
+        // ページ遷移
+        function goToPage(page) {
+            currentPage = page;
+            renderTable();
+        }
+        
+        // アクションボタンの状態更新
+        function updateActionButtons() {
+            const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+            const deleteBtn = document.getElementById('deleteBtn');
+            const unauthorizedBtn = document.getElementById('unauthorizedBtn');
+            
+            deleteBtn.disabled = checkedCount === 0;
+            unauthorizedBtn.disabled = checkedCount === 0;
+            
+            deleteBtn.innerHTML = `<i class="fas fa-trash-alt"></i> ${checkedCount}件を削除`;
+            unauthorizedBtn.innerHTML = `<i class="fas fa-ban"></i> ${checkedCount}件を非許可設定`;
+        }
+        
+        // 全選択チェックボックスの状態更新
+        function updateSelectAllCheckbox() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            const selectAll = document.getElementById('selectAll');
+            const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+            
+            if (checkedCount === 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            } else if (checkedCount === checkboxes.length) {
+                selectAll.checked = true;
+                selectAll.indeterminate = false;
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = true;
+            }
+        }
+        
+        // イベントリスナー設定
+        function setupEventListeners() {
+            // 検索入力
+            document.getElementById('searchInput').addEventListener('input', function() {
+                currentPage = 1;
+                filterAndSortCars();
+                renderTable();
+            });
+            
+            // フィルター変更
+            document.getElementById('statusFilter').addEventListener('change', function() {
+                currentPage = 1;
+                filterAndSortCars();
+                renderTable();
+            });
+            
+            document.getElementById('departmentFilter').addEventListener('change', function() {
+                currentPage = 1;
+                filterAndSortCars();
+                renderTable();
+            });
+            
+            document.getElementById('vehicleTypeFilter').addEventListener('change', function() {
+                currentPage = 1;
+                filterAndSortCars();
+                renderTable();
+            });
+            
+            document.getElementById('unauthorizedFilter').addEventListener('change', function() {
+                currentPage = 1;
+                filterAndSortCars();
+                renderTable();
+            });
+            
+            // ソート
+            document.querySelectorAll('.sortable').forEach(th => {
+                th.addEventListener('click', function() {
+                    const column = this.dataset.sort;
+                    if (sortColumn === column) {
+                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortColumn = column;
+                        sortDirection = 'asc';
+                    }
+                    
+                    // ソートアイコン更新
+                    document.querySelectorAll('.sortable i').forEach(icon => {
+                        icon.className = 'fas fa-sort';
+                    });
+                    
+                    const icon = this.querySelector('i');
+                    icon.className = sortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+                    
+                    filterAndSortCars();
+                    renderTable();
+                });
+            });
+            
+            // 全選択チェックボックス
+            document.getElementById('selectAll').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.row-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateActionButtons();
+                updateSelectAllCheckbox();
+            });
+            
+            // 個別チェックボックス
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('row-checkbox')) {
+                    updateActionButtons();
+                    updateSelectAllCheckbox();
+                }
+            });
+            
+            // 削除ボタン
+            document.getElementById('deleteBtn').addEventListener('click', deleteSelectedCars);
+            
+            // 非許可設定ボタン
+            document.getElementById('unauthorizedBtn').addEventListener('click', setUnauthorizedCars);
+            
+            // モーダル関連
+            const registerModal = document.getElementById('registerModal');
+            const editModal = document.getElementById('editModal');
+            const closeButtons = document.querySelectorAll('.close-modal');
+            
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const modal = this.closest('.modal');
+                    modal.style.display = 'none';
+                });
+            });
+            
+            // モーダル外クリックで閉じる
+            window.addEventListener('click', function(e) {
+                if (e.target === registerModal) {
+                    closeRegisterModal();
+                }
+                if (e.target === editModal) {
+                    closeEditModal();
+                }
+            });
+            
+            // フォーム送信
+            document.getElementById('registerForm').addEventListener('submit', registerNewCar);
+            document.getElementById('editForm').addEventListener('submit', updateCar);
+            
+            // ページネーションボタン
+            document.getElementById('prevPage').addEventListener('click', function() {
+                if (currentPage > 1) {
+                    goToPage(currentPage - 1);
+                }
+            });
+            
+            document.getElementById('nextPage').addEventListener('click', function() {
+                const totalPages = Math.ceil(filteredCars.length / pageSize);
+                if (currentPage < totalPages) {
+                    goToPage(currentPage + 1);
+                }
+            });
+        }
+        
+        // 登録フォームをリセット
+        function resetRegisterForm() {
+            const form = document.getElementById('registerForm');
+            form.reset();
+            
+            // エラースタイルを削除
+            const etcNumberInput = document.getElementById('modalEtcNumber');
+            const plateNumberInput = document.getElementById('modalPlateNumber');
+            const etcNumberError = document.getElementById('etcNumberError');
+            const plateNumberError = document.getElementById('plateNumberError');
+            
+            etcNumberInput.classList.remove('error');
+            plateNumberInput.classList.remove('error');
+            etcNumberError.classList.remove('show');
+            plateNumberError.classList.remove('show');
+        }
+        
+        // 選択車両削除
+        async function deleteSelectedCars() {
+            const selectedCars = Array.from(document.querySelectorAll('.row-checkbox:checked'))
+                .map(cb => cb.dataset.id);
+            
+            if (selectedCars.length === 0) return;
+            
+            if (!confirm(`選択した ${selectedCars.length} 件の車両を削除しますか？この操作は元に戻せません。`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/cars/delete', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ ids: selectedCars })
+                });
+                
+                if (response.ok) {
+                    alert('選択した車両を削除しました。');
+                    loadCarsData(); // データ再読み込み
+                } else {
+                    throw new Error('削除に失敗しました');
+                }
+            } catch (error) {
+                console.error('削除エラー:', error);
+                alert('削除中にエラーが発生しました。');
+            }
+        }
+        
+        // 非許可車両設定
+        async function setUnauthorizedCars() {
+            const selectedCars = Array.from(document.querySelectorAll('.row-checkbox:checked'))
+                .map(cb => cb.dataset.id);
+            
+            if (selectedCars.length === 0) return;
+            
+            if (!confirm(`選択した ${selectedCars.length} 件の車両を非許可車両に設定しますか？`)) {
+                return
+            }
+            
+            try {
+                const response = await fetch('/api/cars/set-unauthorized', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        ids: selectedCars,
+                        isUnauthorized: true 
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('選択した車両を非許可車両に設定しました。');
+                    loadCarsData(); // データ再読み込み
+                } else {
+                    throw new Error('設定に失敗しました');
+                }
+            } catch (error) {
+                console.error('非許可設定エラー:', error);
+                alert('設定中にエラーが発生しました。');
+            }
+        }
+        
+        // 新規登録モーダルを開く
+        function openRegisterModal() {
+            document.getElementById('registerModal').style.display = 'block';
+        }
+        
+        // 新規登録モーダルを閉じる
+        function closeRegisterModal() {
+            document.getElementById('registerModal').style.display = 'none';
+            resetRegisterForm();
+        }
+        
+        // 編集モーダルを開く
+        function openEditModal(car) {
+            selectedCarId = car.id || car.ETCNumber;
+            
+            // フォームにデータを設定
+            document.getElementById('editEtcNumber').value = car.ETCNumber;
+            document.getElementById('editPlateNumber').value = car.PlateNumber || '';
+            document.getElementById('editVehicleType').value = car.VehicleType || '';
+            document.getElementById('editName').value = car.Name;
+            document.getElementById('editDepartment').value = car.Department;
+            document.getElementById('editCategory').value = car.Category || '従業員';
+            document.getElementById('editStatus').value = car.Status;
+            document.getElementById('editEntryTime').value = car.EntryTime || '';
+            document.getElementById('editExitTime').value = car.ExitTime || '';
+            document.getElementById('editIsUnauthorized').checked = car.isUnauthorized || false;
+            
+            // エラースタイルを削除
+            const editPlateNumberInput = document.getElementById('editPlateNumber');
+            const editPlateNumberError = document.getElementById('editPlateNumberError');
+            
+            editPlateNumberInput.classList.remove('error');
+            editPlateNumberError.classList.remove('show');
+            
+            document.getElementById('editModal').style.display = 'block';
+        }
+        
+        // 編集モーダルを閉じる
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            document.getElementById('editForm').reset();
+            selectedCarId = null;
+        }
+        
+        // バリデーション関数
+        function validateRegisterForm() {
+            let isValid = true;
+            const etcNumber = document.getElementById('modalEtcNumber').value.trim();
+            const plateNumber = document.getElementById('modalPlateNumber').value.trim();
+            const etcNumberInput = document.getElementById('modalEtcNumber');
+            const plateNumberInput = document.getElementById('modalPlateNumber');
+            const etcNumberError = document.getElementById('etcNumberError');
+            const plateNumberError = document.getElementById('plateNumberError');
+            
+            // エラーメッセージをリセット
+            etcNumberInput.classList.remove('error');
+            plateNumberInput.classList.remove('error');
+            etcNumberError.classList.remove('show');
+            plateNumberError.classList.remove('show');
+            
+            // ETC車載器番号のバリデーション
+            if (!etcNumber) {
+                etcNumberInput.classList.add('error');
+                etcNumberError.textContent = 'ＥＴＣ車載器番号は必須です';
+                etcNumberError.classList.add('show');
+                isValid = false;
+            } else if (!/^\d{12}$/.test(etcNumber)) {
+                etcNumberInput.classList.add('error');
+                etcNumberError.textContent = '12桁の数字で入力してください';
+                etcNumberError.classList.add('show');
+                isValid = false;
+            }
+            
+            // 車両ナンバーのバリデーション
+            if (!plateNumber) {
+                plateNumberInput.classList.add('error');
+                plateNumberError.textContent = '車両ナンバーは必須です';
+                plateNumberError.classList.add('show');
+                isValid = false;
+            } else if (!/^\d{1,4}$/.test(plateNumber)) {
+                plateNumberInput.classList.add('error');
+                plateNumberError.textContent = '1〜4桁の数字で入力してください';
+                plateNumberError.classList.add('show');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        
+        // 編集フォームのバリデーション
+        function validateEditForm() {
+            let isValid = true;
+            const plateNumber = document.getElementById('editPlateNumber').value.trim();
+            const plateNumberInput = document.getElementById('editPlateNumber');
+            const plateNumberError = document.getElementById('editPlateNumberError');
+            
+            // エラーメッセージをリセット
+            plateNumberInput.classList.remove('error');
+            plateNumberError.classList.remove('show');
+            
+            // 車両ナンバーのバリデーション
+            if (!plateNumber) {
+                plateNumberInput.classList.add('error');
+                plateNumberError.textContent = '車両ナンバーは必須です';
+                plateNumberError.classList.add('show');
+                isValid = false;
+            } else if (!/^\d{1,4}$/.test(plateNumber)) {
+                plateNumberInput.classList.add('error');
+                plateNumberError.textContent = '1〜4桁の数字で入力してください';
+                plateNumberError.classList.add('show');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        
+        // 新規車両登録
+        async function registerNewCar(e) {
+            e.preventDefault();
+            
+            // バリデーション
+            if (!validateRegisterForm()) {
+                return;
+            }
+            
+            const etcNumber = document.getElementById('modalEtcNumber').value.trim();
+            const plateNumber = document.getElementById('modalPlateNumber').value.trim();
+            const vehicleType = document.getElementById('modalVehicleType').value;
+            const name = document.getElementById('modalName').value.trim();
+            const department = document.getElementById('modalDepartment').value.trim();
+            const category = document.getElementById('modalCategory').value;
+            const isUnauthorized = document.getElementById('modalIsUnauthorized').checked;
+            
+            // 重複チェック
+            const isDuplicate = allCars.some(car => car.ETCNumber === etcNumber);
+            if (isDuplicate) {
+                const etcNumberInput = document.getElementById('modalEtcNumber');
+                const etcNumberError = document.getElementById('etcNumberError');
+                etcNumberInput.classList.add('error');
+                etcNumberError.textContent = 'このＥＴＣ車載器番号は既に登録されています';
+                etcNumberError.classList.add('show');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/cars', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        etcNumber,
+                        plateNumber,
+                        vehicleType,
+                        name,
+                        department,
+                        category,
+                        isUnauthorized
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('新規車両を登録しました。');
+                    closeRegisterModal();
+                    loadCarsData(); // データ再読み込み
+                } else {
+                    throw new Error('登録に失敗しました');
+                }
+            } catch (error) {
+                console.error('登録エラー:', error);
+                alert('登録中にエラーが発生しました。');
+            }
+        }
+        
+        // 車両情報更新
+        async function updateCar(e) {
+            e.preventDefault();
+            
+            if (!selectedCarId) return;
+            
+            // バリデーション
+            if (!validateEditForm()) {
+                return;
+            }
+            
+            const etcNumber = document.getElementById('editEtcNumber').value.trim();
+            const plateNumber = document.getElementById('editPlateNumber').value.trim();
+            const vehicleType = document.getElementById('editVehicleType').value;
+            const name = document.getElementById('editName').value.trim();
+            const department = document.getElementById('editDepartment').value.trim();
+            const category = document.getElementById('editCategory').value;
+            const status = document.getElementById('editStatus').value;
+            const entryTime = document.getElementById('editEntryTime').value;
+            const exitTime = document.getElementById('editExitTime').value;
+            const isUnauthorized = document.getElementById('editIsUnauthorized').checked;
+            
+            // 重複チェック（自分自身を除く）
+            const isDuplicate = allCars.some(car => 
+                car.ETCNumber === etcNumber && 
+                (car.id !== selectedCarId && car.ETCNumber !== selectedCarId)
+            );
+            if (isDuplicate) {
+                const editEtcNumberError = document.getElementById('editEtcNumberError');
+                editEtcNumberError.textContent = 'このＥＴＣ車載器番号は既に他の車両で登録されています';
+                editEtcNumberError.classList.add('show');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/cars/${selectedCarId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        etcNumber,
+                        plateNumber,
+                        vehicleType,
+                        name,
+                        department,
+                        category,
+                        status,
+                        entryTime,
+                        exitTime,
+                        isUnauthorized
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('車両情報を更新しました。');
+                    closeEditModal();
+                    loadCarsData(); // データ再読み込み
+                } else {
+                    throw new Error('更新に失敗しました');
+                }
+            } catch (error) {
+                console.error('更新エラー:', error);
+                alert('更新中にエラーが発生しました。');
+            }
+        }
+        
+        // CSVエクスポート
+        function exportToCSV() {
+            const headers = ['区分', 'ＥＴＣ車載器番号', '車両ナンバー', '車種', '氏名', '部署', '状態', '入場時刻', '出場時刻', '在庫時間', '許可状態'];
+            const csvData = [
+                headers.join(','),
+                ...filteredCars.map(car => [
+                    car.Category || '従業員',
+                    car.ETCNumber,
+                    car.PlateNumber || '',
+                    car.VehicleType || '',
+                    car.Name,
+                    car.Department,
+                    car.Status,
+                    car.EntryTime || '',
+                    car.ExitTime || '',
+                    car.StayTime || '',
+                    car.isUnauthorized ? '非許可' : '許可'
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob(['\ufeff' + csvData], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `許可車両一覧_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // ランダムな車種を取得（デモ用）
+        function getRandomVehicleType() {
+            const randomIndex = Math.floor(Math.random() * vehicleTypes.length);
+            return vehicleTypes[randomIndex];
+        }
+        
+        // ランダムな区分を取得（デモ用）
+        function getRandomCategory() {
+            const randomIndex = Math.floor(Math.random() * categories.length);
+            return categories[randomIndex];
+        }
+    </script>
+</body>
+</html>

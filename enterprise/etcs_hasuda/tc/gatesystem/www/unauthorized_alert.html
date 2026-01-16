@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>施設駐車場ＥＴＣセキュリティサービス_来客車両検出</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        }
+        
+        .notification-badge.danger {
+            background: linear-gradient(135deg, var(--color-danger) 0%, #ef4444 100%);
+            color: white;
+            animation: blink 1s infinite alternate;
+        }
+        
+        /* 左側コンテンツ */
+        .left-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--space-xl);
+            text-align: center;
+            overflow-y: auto;
+        }
+        
+        .status-container {
+            margin-bottom: var(--space-lg);
+            max-width: 800px;
+        }
+        
+        .status-ring {
+            border-top: 3px solid #ef4444;
+            border-right: 3px solid #ef4444;
+        }
+        
+        .status-icon {
+            background: linear-gradient(135deg, var(--color-danger) 0%, #ef4444 100%);
+        }
+        
+        .status-text {
+            margin-bottom: var(--space-lg);
+        }
+        
+        .status-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: var(--space-sm);
+            color: #7f1d1d;
+        }
+        
+        .status-description {
+            font-size: 16px;
+            color: #991b1b;
+            line-height: 1.6;
+        }
+        
+        /* 監視パネル */
+        .monitor-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-xl);
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: var(--space-xl);
+        }
+        
+        .monitor-card {
+            height: 360px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-icon {
+            color: var(--color-danger);
+        }
+        
+        /* 右側警告カード */
+        .right-alert-info {
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .alert-card {
+            border: 2px solid #fecaca;
+            animation: slideUp 0.7s ease-out;
+            flex: 1;
+        }
+        
+        .alert-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--color-danger) 0%, #ef4444 100%);
+        }
+        
+        .card-header-large {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--space-xl);
+            padding-bottom: var(--space-lg);
+            border-bottom: 2px solid #fee2e2;
+        }
+        
+        .header-icon {
+            background: #fee2e2;
+            color: var(--color-danger);
+        }
+        
+        .header-title {
+            color: #7f1d1d;
+        }
+        
+        /* 車両情報縦配置 */
+        .vehicle-info {
+            margin-top: var(--space-xl);
+        }
+        
+        .info-label-vertical {
+            color: #991b1b;
+        }
+        
+        .info-value-vertical {
+            color: #7f1d1d;
+            background: #fee2e2;
+        }
+        
+        .info-value-vertical:hover {
+            background: #fecaca;
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 1200px) {
+            .right-alert-info {
+                width: 100%;
+                margin-top: var(--space-xl);
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .monitor-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-header-large {
+                flex-direction: column;
+                gap: var(--space-md);
+                text-align: center;
+            }
+            
+            .header-left {
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .left-content {
+                padding: 0;
+            }
+            
+            .alert-card {
+                padding: var(--space-lg);
+            }
+            
+            .status-title {
+                font-size: 30px;
+            }
+            
+            .status-description {
+                font-size: 15px;
+            }
+            
+            .info-value-vertical {
+                font-size: 18px;
+                min-height: 70px;
+                padding: var(--space-md);
+            }
+            
+            .monitor-card {
+                height: 320px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="fade-in">
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="logo-container">
+            <h1 class="system-title">施設駐車場ＥＴＣセキュリティサービス</h1>
+        </div>
+        <div class="header-right">
+            <div class="system-status">
+                <div class="current-time" id="currentTime">YYYY年MM月DD日 HH:MM:SS</div>
+                <div class="notification-badge danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    来客車両検出 - 警告
+                </div>
+            </div>
+            <button class="list-button" onclick="location.href='vehicle_list.html'">
+                <i class="fas fa-list"></i>
+                許可車両一覧
+            </button>
+        </div>
+    </header>
+    
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <!-- 左側コンテンツ -->
+        <div class="left-content">
+            <div class="status-container">
+                <div class="status-icon-wrapper">
+                    <div class="status-ring"></div>
+                    <div class="status-icon">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                </div>
+                
+                <div class="status-text">
+                    <h2 class="status-title">来客車両 検出</h2>
+                    <p class="status-description">許可リストにない車両がゲートを通過しようとしています。</p>
+                </div>
+            </div>
+            
+            <div class="monitor-panel">
+                <div class="monitor-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h3 class="card-title">ゲート映像</h3>
+                    </div>
+                    <div class="card-content" id="videoFeed">
+                        <i class="fas fa-video-slash"></i> 映像準備中
+                    </div>
+                </div>
+                
+                <div class="monitor-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <h3 class="card-title">最新検出画像</h3>
+                    </div>
+                    <div class="card-content" id="latestImage">
+                        <i class="fas fa-camera"></i> 画像準備中
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右側警告カード（縦配置） -->
+        <div class="right-alert-info">
+            <div class="alert-card slide-up">
+                <div class="card-header-large">
+                    <div class="header-left">
+                        <div class="header-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <h3 class="header-title">検出車両情報</h3>
+                    </div>
+                </div>
+                
+                <!-- 車両情報縦配置 -->
+                <div class="vehicle-info">
+                    <div class="info-vertical">
+                        <div class="info-item-vertical">
+                            <div class="info-label-vertical">
+                                <i class="fas fa-id-card"></i>
+                                ＥＴＣ車載器番号
+                            </div>
+                            <div class="info-value-vertical" id="unauthorizedEtcNumber">123456789999</div>
+                        </div>
+                        
+                        <div class="info-item-vertical">
+                            <div class="info-label-vertical">
+                                <i class="fas fa-hashtag"></i>
+                                車両ナンバー
+                            </div>
+                            <div class="info-value-vertical" id="unauthorizedSerialNumber">9999</div>
+                        </div>
+                        
+                        <div class="info-item-vertical">
+                            <div class="info-label-vertical">
+                                <i class="fas fa-car-side"></i>
+                                車種
+                            </div>
+                            <div class="info-value-vertical" id="vehicleType">トラック</div>
+                        </div>
+                        
+                        <div class="info-item-vertical">
+                            <div class="info-label-vertical">
+                                <i class="far fa-clock"></i>
+                                検出時刻
+                            </div>
+                            <div class="info-value-vertical" id="detectionTime">HH:MM:SS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // 車種リスト
+        const vehicleTypes = ['セダン', 'トラック', '軽トラック', 'SUV/MPV', 'バン', 'バス'];
+        
+        // 日時更新
+        function updateDateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            const timeStr = now.toLocaleTimeString('ja-JP');
+            document.getElementById('currentTime').textContent = `${dateStr} ${timeStr}`;
+            document.getElementById('detectionTime').textContent = timeStr;
+        }
+        
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // ビデオフィード
+            const videoFeed = document.getElementById('videoFeed');
+            videoFeed.innerHTML = `
+                <video autoplay muted loop style="width:100%; height:100%; object-fit:cover;">
+                    <source src="/hls/output.mp4" type="video/mp4">
+                </video>
+            `;
+            
+            // 最新画像
+            const latestImage = document.getElementById('latestImage');
+            latestImage.innerHTML = `
+                <img src="/api/latest-image" alt="最新車両画像" 
+                     style="width:100%; height:100%; object-fit:cover;"
+                     onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\"fas fa-camera\"></i> 最新画像なし';">`;
+            
+            // 非許可車両情報
+            fetch('/api/unauthorized-vehicle')
+                .then(response => response.json())
+                .then(data => {
+                    if (data) {
+                        document.getElementById('unauthorizedEtcNumber').textContent = data.etcNumber || "N/A";
+                        document.getElementById('unauthorizedSerialNumber').textContent = data.serialNumber || "N/A";
+                        document.getElementById('vehicleType').textContent = data.vehicleType || getRandomVehicleType();
+                    }
+                })
+                .catch(console.error);
+            
+            // セキュリティログ記録
+            fetch('/api/log-security-alert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'unauthorized_vehicle',
+                    etcNumber: document.getElementById('unauthorizedEtcNumber').textContent,
+                    serialNumber: document.getElementById('unauthorizedSerialNumber').textContent,
+                    vehicleType: document.getElementById('vehicleType').textContent,
+                    timestamp: new Date().toISOString(),
+                    location: 'メインゲート'
+                })
+            });
+        });
+        
+        // ランダムな車種を取得（デモ用）
+        function getRandomVehicleType() {
+            const randomIndex = Math.floor(Math.random() * vehicleTypes.length);
+            return vehicleTypes[randomIndex];
+        }
+    </script>
+</body>
+</html>

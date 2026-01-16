@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ゲート管理システム</title>
+    <style>
+        body {
+            font-family: "Meiryo", sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #f5f5f5;
+            position: relative;
+        }
+        /* 登録車両通過時は緑色背景 */
+        body.user-found {
+            background-color: #88e73f;
+        }
+        /* 来客車両通過時は青色背景 */
+        body.visitor-found {
+            background-color: #0095ff;
+        }
+        /* 危険車両（退職したのに入って来ようとする奴とか）通過時は赤色背景（とりあえず未実装） */
+        body.danger-found {
+            background-color: #ff0000;
+        }
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: black;
+        }
+        .user-info {
+            position: absolute;
+            top: 28%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .department {
+            font-size: 100px;
+            font-weight: bold;
+            line-height: 0.9;
+            margin-bottom: 20px;
+            color: white;
+        }
+        .name {
+            font-size: 90px;
+            line-height: 0.9;
+            color: white;
+        }
+        .gate-button {
+            font-size: 80px;
+            padding: 20px 40px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .footer-button {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+        .list-button {
+            padding: 15px 30px;
+            background-color: #FF9800;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        .list-button:hover {
+            background-color: #f59505;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .video-container {
+            position: fixed;
+            left: 350px;
+            bottom: 20px;
+            width: 400px;
+            height: 300px;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-container {
+            position: fixed;
+            left: 800px;
+            bottom: 20px;
+            width: 400px;
+            height: 300px;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        } 
+        /* 画像のアスペクト比に応じて適用されるクラス */
+        .portrait img {
+            width: auto;
+            height: 100%;
+        }
+        .landscape img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+    <script>
+        // 許可車両かどうかで画面を分岐
+        function updateUserInfo() {
+            fetch('/api/user-info')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.redirect) {
+                        // 許可車両の場合、新しい画面にリダイレクト
+                        window.location.href = data.redirect;
+                    } else if (data.department !== '来客車' && data.department !== '未検出') {
+                        // 登録車の場合（既存の処理）
+                        document.getElementById('department').textContent = data.department;
+                        document.getElementById('name').textContent = data.name;
+                        document.getElementById('gateButton').style.display = 'none';
+                        document.body.style.backgroundColor = '#88e73f';
+                    } else {
+                        // 来客車の場合
+                        document.getElementById('department').textContent = data.department;
+                        document.getElementById('name').textContent = data.name || '';
+                        document.getElementById('gateButton').style.display = 'block';
+                        document.body.style.backgroundColor = '#0095ff';
+                    }
+                })
+                .catch(error => {
+                    console.error('ユーザー情報取得エラー:', error);
+                });
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            setInterval(updateUserInfo, 5000);
+            setInterval(updateVehicleImage, 5000);
+            updateUserInfo();
+            updateVehicleImage();
+        });
+    </script>
+</head>
+<body class="{{if .UserInfo.IsVisitor}}visitor-found {{else if .UserInfo.Department}}user-found{{end}}">
+
+
+    <!-- タイトル表示 -->
+    <div class="header">ゲート管理システム</div>
+
+
+    <!--
+    部署・氏名 or 来客車・ゲートオープンボタン表示
+    ここは登録済み車両か来客車両かで表示の仕方を分ける
+    -->
+    <!-- ② 中央に部署名と氏名 -->
+    <div class="content">
+        <div class="user-info">
+            <div class="department" id="department"></div>
+            <div class="name" id="name"></div>
+            <button class="gate-button" id="gateButton" onclick="openGate()" style="display:none;">ゲートオープン</button>
+        </div>
+    </div>
+
+    <!-- <div class="video-container">
+        <video id="video" autoplay playsinline controls></video>
+    </div> -->
+    <div class="video-container">
+        <video id="gateVideo" loop muted autoplay>
+            <source src="/hls/output.mp4" type="video/mp4">
+            お使いのブラウザは動画をサポートしていません。
+        </video>
+    </div>
+   
+    <div class="image-container">
+            <img id="vehicleImage" src="" alt="最新車両画像" onload="adjustImageLayout(this)">
+    </div>
+        
+    
+    <!-- 許可車一覧ボタン -->
+    <div class="footer-button">
+        <button class="list-button" onclick="location.href='/index'">許可車一覧</button>
+    </div>
+
+
+</body>
+</html>

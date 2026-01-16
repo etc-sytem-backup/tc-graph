@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display</title>
+
+    <!-- CSS読み込み -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+
+<body>
+    <!-- bootstrap js読み込み -->
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <!-- 自作関数読込み -->
+    <script src="./js/script.js"></script>
+
+    <div class="container my-2">
+        <div class="card">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-4">駐車台数オフセット</h4>
+                <div class="row mb-4">
+                    <h4>大型車: <span id="l-park-offset-value">0</span></h5>
+                    <input type="range" class="form-range" id="l-park-offset" min="0" max="400" value="0">
+                </div>
+                <div class="row mb-4">
+                    <h4>小型車: <span id="s-park-offset-value">0</span></h5>
+                    <input type="range" class="form-range" id="s-park-offset" min="0" max="400" value="0">
+                </div>
+                <div class="text-center">
+                    <button type="button" class="btn btn-primary py-2 px-4 me-5 font-2rem"
+                        onclick="if(confirm('送信しても良いですか？')) {
+                            const loffset = document.getElementById('l-park-offset').value;
+                            const soffset = document.getElementById('s-park-offset').value;
+                            sendParkingOffsetSettings(loffset, soffset);
+                        }">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 初期値を表示する
+            initParkingOffsetSettings();
+            
+            // レンジ数値を表示する
+            document.querySelectorAll("input[type=range]").forEach(e => {
+                e.addEventListener("input", () => {
+                    document.getElementById(e.id + "-value").textContent = e.value;
+                });
+            });
+        </script>
+
+        <div class="last-receive-time">
+            最終受信：
+            <span id="last-receive-time-settings">---</span>
+        </div>
+    </div>
+    <div class="card float-menu">
+        <div class="card-body">
+            <nav class="nav flex-column">
+                <h6>Menu</h6>
+                <a class="nav-link" href="index.html">メイン</a>
+                <a class="nav-link" href="average.html">統計（平均）</a>
+                <a class="nav-link" href="table.html">統計（一覧）</a>
+                <a class="nav-link" href="reverse.html">統計（逆走）</a>
+                <a class="nav-link" href="passage.html">断面交通量</a>
+                <a class="nav-link" href="settings.html">設定</a>
+            </nav>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display</title>
+
+    <!-- CSS読み込み -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+    <!-- bootstrap js読み込み -->
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <!-- 自作関数読込み -->
+    <script src="./js/script.js"></script>
+
+    <div class="container my-2">
+        <div class="mt-3 mb-5 w-100 text-end font-2rem">
+            ランプ停滞中：<span id="jam-flg" class="text-danger">　</span>
+        </div>
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title">平均駐車時間：当日（分）</h4>
+                <div class="row">
+                    <div class="col">
+                        <div class="card mt-2">
+                            <div class="card-body">
+                                <h4 class="card-title">全体</h4>
+                                <div id="a-parking-min-avg-day" class="font-5rem text-center">-- min</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card mt-2">
+                            <div class="card-body">
+                                <h4 class="card-title">大型</h4>
+                                <div id="l-parking-min-avg-day" class="font-5rem text-center">-- min</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card mt-2">
+                            <div class="card-body">
+                                <h4 class="card-title">小型</h4>
+                                <div id="s-parking-min-avg-day" class="font-5rem text-center">-- min</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title">平均駐車時間：週間（分）</h4>
+                <div class="row">
+                    <div class="col">
+                        <div class="card mt-2">
+                            <div class="card-body">
+                                <h4 class="card-title">全体</h4>
+                                <div id="a-parking-min-avg-week" class="font-5rem text-center">-- min</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card mt-2">
+                            <div class="card-body">
+                                <h4 class="card-title">大型</h4>
+                                <div id="l-parking-min-avg-week" class="font-5rem text-center">-- min</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card mt-2">
+                            <div class="card-body">
+                                <h4 class="card-title">小型</h4>
+                                <div id="s-parking-min-avg-week" class="font-5rem text-center">-- min</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
+            </div>
+        </div>
+        <div class="card float-menu">
+            <div class="card-body">
+                <nav class="nav flex-column">
+                    <h6>Menu</h6>
+                    <a class="nav-link" href="index.html">メイン</a>
+                    <a class="nav-link" href="average.html">統計（平均）</a>
+                    <a class="nav-link" href="table.html">統計（一覧）</a>
+                    <a class="nav-link" href="reverse.html">統計（逆走）</a>
+                    <a class="nav-link" href="passage.html">断面交通量</a>
+                    <a class="nav-link" href="settings.html">設定</a>
+                </nav>
+            </div>
+        </div>
+        <div class="last-receive-time">
+            最終受信：
+            <span id="last-receive-time-avg">---</span>
+        </div>
+    </div>
+</body>
+</html>

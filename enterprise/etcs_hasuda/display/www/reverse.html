@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display</title>
+
+    <!-- CSS読み込み -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+  </head>
+  <body onload="initReverseRows()">
+    <!-- bootstrap js読み込み -->
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <!-- 自作関数読込み -->
+    <script src="./js/script.js"></script>
+
+    <div class="container my-4">
+      <h3>逆走検知履歴</h3>
+      <div class="reverse-table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">駐車開始時刻</th>
+              <th scope="col">WCN番号</th>
+              <th scope="col">ETCカード番号</th>
+              <th scope="col">支局</th>
+              <th scope="col">用途</th>
+              <th scope="col">種別</th>
+              <th scope="col">一連番号</th>
+              <th scope="col">アンテナ</th>
+            </tr>
+          </thead>
+          <tbody id="disp-reverse" class="disp-reverse-rows">
+          </tbody>
+        </table>
+      </div>
+      <div class="text-center mt-4">
+        <button type="button" class="btn btn-danger py-2 px-4 font-2rem" onclick="sendAlertResetCmd()">警報クリア</button>
+      </div>
+      <div class="card float-menu">
+        <div class="card-body">
+          <nav class="nav flex-column">
+            <h6>Menu</h6>
+            <a class="nav-link" href="index.html">メイン</a>
+            <a class="nav-link" href="average.html">統計（平均）</a>
+            <a class="nav-link" href="table.html">統計（一覧）</a>
+            <a class="nav-link" href="reverse.html">統計（逆走）</a>
+            <a class="nav-link" href="passage.html">断面交通量</a>
+            <a class="nav-link" href="settings.html">設定</a>
+          </nav>
+        </div>
+      </div>
+      <div class="last-receive-time">
+        最終受信：
+        <span id="last-receive-time-reverse">---</span>
+      </div>
+    </div>
+  </body>
+</html>

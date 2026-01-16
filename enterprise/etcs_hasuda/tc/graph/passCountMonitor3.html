@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display</title>
+
+    <!-- CSS読み込み -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    
+    <!-- SheetJSライブラリの読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        .title-section {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .main-title {
+            font-size: 4rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 0;
+        }
+
+        .current-time {
+            font-size: 3rem;
+            text-align: right;
+            margin-top: 0 0 0 30px;
+        }
+
+        .card-title-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+        }
+
+        .last-received {
+            font-size: 1.8rem;
+            color: #6c757d;
+        }
+
+        /* 追加: ボタンと時刻を横並びにするスタイル */
+        .button-time-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .loading-message {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #007bff;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- bootstrap js読み込み -->
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <!-- 自作関数読込み -->
+    <script src="./js/script.js"></script>
+
+    <div class="container my-2">
+        <!-- タイトルと時刻表示セクション -->
+        <div class="title-section">
+            <div class="row">
+                <div>
+                    <h1 class="main-title">ＥＴＣトラカン 断面交通量モニター</h1>
+                </div>
+            </div>
+            <!-- 修正: ボタンと時刻を横並びにする -->
+            <div class="button-time-section">
+                <button type="button" class="btn btn-danger py-2 px-4 me-5 font-2rem"
+                    onclick="sendPassageResetCmd()">リセット</button>
+                <span id="current-time" class="current-time">-</span>
+            </div>
+        </div>
+
+        <div id="loading-message" class="loading-message">Excelファイルを読み込み中...</div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="card-title-section">
+                    <h4 class="card-title">アンテナ1号機</h4>
+                    <div class="last-received">最終受信: <span id="ant-1-last">-</span></div>
+                </div>
+                <div class="row mt-1 position-relative">
+                    <div class="col font-6_5rem text-center">
+                        <span id="ant-1-cnt">0</span>台
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-2">
+            <div class="card-body">
+                <div class="card-title-section">
+                    <h4 class="card-title">アンテナ2号機</h4>
+                    <div class="last-received">最終受信: <span id="ant-2-last">-</span></div>
+                </div>
+                <div class="row mt-1 position-relative">
+                    <div class="col font-6_5rem text-center">
+                        <span id="ant-2-cnt">0</span>台
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="card-title-section">
+                    <h4 class="card-title">アンテナ3号機</h4>
+                    <div class="last-received">最終受信: <span id="ant-3-last">-</span></div>
+                </div>
+                <div class="row mt-1 position-relative">
+                    <div class="col font-6_5rem text-center">
+                        <span id="ant-3-cnt">0</span>台
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let excelData = [];
+        let currentCounts = {1: 0, 2: 0, 3: 0};
+        let processedRecords = new Set();
+        let startCountingTime = new Date();
+        let lastProcessedIndex = -1; // 最後に処理したレコードのインデックス
+
+        // カウント開始時刻を21:00:00に設定
+        function setStartCountingTime() {
+            startCountingTime = new Date();
+            startCountingTime.setHours(21, 0, 0, 0);
+            
+            // 現在時刻が21時より前の場合は前日の21時とする
+            const now = new Date();
+            if (now < startCountingTime) {
+                startCountingTime.setDate(startCountingTime.getDate() - 1);
+            }
+            
+            console.log('カウント開始時刻:', startCountingTime);
+        }
+
+        // 現在時刻を更新する関数
+        function updateCurrentTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            const formattedTime = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+            document.getElementById('current-time').textContent = formattedTime;
+            
+            // 時刻更新時にデータチェックも実行
+            if (excelData.length > 0) {
+                checkAndUpdateCounts();
+            }
+        }
+
+        // 最終受信時刻を初期表示
+        function initializeLastReceivedTime() {
+            const now = new Date();
+            const formattedTime = formatDateTime(now);
+
+            document.getElementById('ant-1-last').textContent = formattedTime;
+            document.getElementById('ant-2-last').textContent = formattedTime;
+            document.getElementById('ant-3-last').textContent = formattedTime;
+        }
+
+        // 日時をフォーマットする関数
+        function formatDateTime(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+
+            return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        // Excelファイルを読み込む関数
+        function loadExcelFile() {
+            // ファイルパスを指定
+            const url = './251010_restFacility/passCount_10月16日.xlsx';
+            
+            console.log('Excelファイル読み込み開始:', url);
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('ファイルの読み込みに失敗しました: ' + response.status);
+                    }
+                    return response.arrayBuffer();
+                })
+                .then(data => {
+                    console.log('ファイルデータ取得成功, サイズ:', data.byteLength, 'bytes');
+                    
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // シートデータをJSON形式で取得
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    console.log('Excelデータ行数:', jsonData.length);
+                    
+                    // ヘッダー行をスキップしてデータを処理
+                    excelData = [];
+                    
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (row.length >= 3) {
+                            try {
+                                const dateStr = row[0]; // 日付列 "2025/10/16"
+                                const timeStr = row[1]; // 時刻列 "0:00:41"
+                                
+                                // 日付と時刻を結合してDateオブジェクトを作成
+                                const dateTimeStr = `${dateStr} ${timeStr}`;
+                                const recordTime = new Date(dateTimeStr);
+                                
+                                // 有効な日付かチェック
+                                if (isNaN(recordTime.getTime())) {
+                                    console.warn('無効な日時形式:', dateTimeStr);
+                                    continue;
+                                }
+                                
+                                const antenna = parseInt(row[2]);
+                                if ([1, 2, 3].includes(antenna)) {
+                                    excelData.push({
+                                        date: row[0],
+                                        time: row[1],
+                                        antenna: antenna,
+                                        wcn: row[3],
+                                        branch: row[4],
+                                        usage: row[5],
+                                        type: row[6],
+                                        vehicleNumber: row[7],
+                                        vehicleType: row[8],
+                                        recordTime: recordTime
+                                    });
+                                }
+                            } catch (error) {
+                                console.warn('行の処理中にエラー:', i, error);
+                            }
+                        }
+                    }
+                    
+                    console.log('有効なデータ件数:', excelData.length);
+                    
+                    // データを時刻でソート
+                    excelData.sort((a, b) => a.recordTime - b.recordTime);
+                    
+                    // ローディングメッセージを非表示
+                    document.getElementById('loading-message').style.display = 'none';
+                    
+                    console.log('Excelデータ読み込み完了');
+                    
+                    // カウント開始時刻を設定
+                    setStartCountingTime();
+                    
+                    // 初期カウントを実行
+                    initializeCounts();
+                })
+                .catch(error => {
+                    console.error('ファイル読み込みエラー:', error);
+                    document.getElementById('loading-message').textContent = 
+                        'ファイル読み込みエラー: ' + error.message;
+                    document.getElementById('loading-message').style.color = 'red';
+                });
+        }
+
+        // 初期カウントを実行（過去のデータをまとめて計測）
+        function initializeCounts() {
+            const now = new Date();
+            console.log('初期カウント実行: 現在時刻', now);
+            console.log('カウント開始時刻:', startCountingTime);
+            
+            // カウントをリセット
+            currentCounts = {1: 0, 2: 0, 3: 0};
+            processedRecords.clear();
+            lastProcessedIndex = -1;
+            
+            let count = 0;
+            // カウント開始時刻から現在時刻までのデータをカウント
+            for (let i = 0; i < excelData.length; i++) {
+                const record = excelData[i];
+                if (record.recordTime >= startCountingTime && record.recordTime <= now) {
+                    currentCounts[record.antenna]++;
+                    processedRecords.add(i);
+                    lastProcessedIndex = i;
+                    count++;
+                    
+                    // 最終受信時刻を更新
+                    updateLastReceivedTime(record.antenna, record.recordTime);
+                } else if (record.recordTime > now) {
+                    // 未来のデータはスキップ
+                    break;
+                }
+            }
+            
+            // カウントを表示
+            updateDisplay();
+            
+            console.log('初期カウント結果:', currentCounts);
+            console.log('処理済みレコード数:', count);
+        }
+
+        // カウントをチェックして更新する関数
+        function checkAndUpdateCounts() {
+            const now = new Date();
+            let updated = false;
+            
+            // 最後に処理した位置から開始
+            for (let i = lastProcessedIndex + 1; i < excelData.length; i++) {
+                const record = excelData[i];
+                
+                // 現在時刻までのデータを処理
+                if (record.recordTime <= now) {
+                    currentCounts[record.antenna]++;
+                    processedRecords.add(i);
+                    lastProcessedIndex = i;
+                    updated = true;
+                    
+                    // 最終受信時刻を更新
+                    updateLastReceivedTime(record.antenna, record.recordTime);
+                    
+                    console.log(`カウント更新: アンテナ${record.antenna}, 時刻: ${record.time}, 合計: ${currentCounts[record.antenna]}`);
+                } else {
+                    // 未来のデータはスキップ
+                    break;
+                }
+            }
+            
+            if (updated) {
+                updateDisplay();
+            }
+        }
+
+        // 表示を更新する関数
+        function updateDisplay() {
+            document.getElementById('ant-1-cnt').textContent = currentCounts[1];
+            document.getElementById('ant-2-cnt').textContent = currentCounts[2];
+            document.getElementById('ant-3-cnt').textContent = currentCounts[3];
+        }
+
+        // 最終受信時刻を更新する関数
+        function updateLastReceivedTime(antenna, recordTime) {
+            const formattedTime = formatDateTime(recordTime);
+            document.getElementById(`ant-${antenna}-last`).textContent = formattedTime;
+        }
+
+        // リセット関数
+        function sendPassageResetCmd() {
+            if (confirm('カウントをリセットしますか？')) {
+                currentCounts = {1: 0, 2: 0, 3: 0};
+                processedRecords.clear();
+                lastProcessedIndex = -1;
+                updateDisplay();
+                initializeLastReceivedTime();
+                console.log('カウントをリセットしました');
+            }
+        }
+
+        // ページ読み込み時に初期化
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('ページ読み込み完了');
+            
+            updateCurrentTime();
+            initializeLastReceivedTime();
+            setInterval(updateCurrentTime, 1000);
+            
+            // Excelファイルを読み込み
+            loadExcelFile();
+        });
+    </script>
+</body>
+
+</html>

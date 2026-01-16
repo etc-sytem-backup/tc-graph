@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リアルタイム表示</title>
+
+    <!-- CSS読み込み -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <!-- Chart.jsの読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (xlsx) の読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+        line-height: 1;
+        background-color: #f8f9fa;
+    }
+
+    .font-1_5rem {
+        font-size: 1.5rem;
+    }
+
+    .font-2rem {
+        font-size: 2rem;
+    }
+
+    .font-3rem {
+        font-size: 3rem;
+    }
+
+    .font-3_5rem {
+        font-size: 3.5rem;
+    }
+
+    .font-4rem {
+        font-size: 4rem;
+    }
+
+    .font-4_5rem {
+        font-size: 4.5rem;
+    }
+
+    .font-5rem {
+        font-size: 5rem;
+    }
+
+    .font-6rem {
+        font-size: 6rem;
+    }
+
+    .font-6_5rem {
+        font-size: 6.5rem;
+    }
+
+    .font-7rem {
+        font-size: 7rem;
+    }
+
+    .pl-7rem {
+        padding-left: 7rem;
+    }
+
+    .pb-100px {
+        padding-bottom: 100px;
+    }
+
+    .float-menu {
+        position: fixed;
+        bottom: 0.5rem;
+        right: 0.5rem;
+        background-color: #f8f8f8;
+        box-shadow: 0px 0px 19px -3px #bdbdbd;
+        z-index: 1000;
+    }
+
+    .h {
+        position: sticky;
+        top: 0;
+        left: 0;
+        background-color: #f3f3f3 !important;
+    }
+
+    .table-table-wrapper {
+        overflow-y: scroll;
+        height: 220px;
+        font-size: 1.5rem;
+    }
+
+    .reverse-table-wrapper {
+        overflow-y: scroll;
+        height: 600px;
+        font-size: 1.5rem;
+    }
+
+    .w-fit-content {
+        width: fit-content;
+    }
+    
+    /* リアルタイム画面用スタイル */
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .btn-group-real-time {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .btn-real-time {
+        padding: 12px 20px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        min-width: 180px;
+    }
+    
+    .btn-time-switcher {
+        padding: 8px 16px;
+        font-size: 1.2rem;
+        border: 2px solid #0d6efd;
+        background: #f8f8f8;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    
+    .btn-time-switcher.active {
+        background: #0d6efd;
+        color: white;
+    }
+    
+    .charts-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .chart-box {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+    
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .chart-title {
+        font-size: 1.4rem;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+    
+    .main-title-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 5px;
+        padding: 15px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
+        border-left: 4px solid #0d6efd;
+        position: relative;
+    }
+    
+    .main-title-content {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .main-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 0 0 5px 0;
+    }
+    
+    .current-time {
+        font-size: 1.4rem;
+        color: #666;
+        font-weight: normal;
+    }
+    
+    .update-info {
+        font-size: 1.4rem; /* 現在時刻と同じフォントサイズに変更 */
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    
+    .time-switcher-container {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+    
+    /* 座標表示エリアのスタイル */
+    .coordinates-container {
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        padding: 15px;
+        margin-top: 20px;
+        font-family: monospace;
+        font-size: 0.9rem;
+    }
+    
+    .coordinates-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #495057;
+    }
+    
+    .coordinate-line {
+        margin-bottom: 5px;
+        line-height: 1.4;
+    }
+    
+    .coordinate-label {
+        display: inline-block;
+        width: 180px;
+        font-weight: bold;
+        color: #495057;
+    }
+    
+    .coordinate-data {
+        display: inline;
+        color: #6c757d;
+    }
+    
+    /* アップロードボタンスタイル */
+    .upload-btn {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+        background: transparent;
+        /*background-color: #28a745;*/
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .upload-btn:hover {
+        background: transparent;
+        /*background-color: #218838;*/
+    }
+    
+    .file-input {
+        display: none;
+    }    </style>
+</head>
+<body>
+    <!-- bootstrap js読み込み -->
+    <script src="./js/bootstrap.bundle.min.js"></script>
+
+    <div class="container my-4">
+        <h2 class="text-center my-3">ETCトラカンデータ観測</h2>
+        
+        <!-- ボタングループ -->
+        <div class="btn-group-real-time">
+            <button class="btn btn-primary btn-real-time" onclick="changeView('group1')">休憩施設利用状況</button>
+            <button class="btn btn-secondary btn-real-time" onclick="changeView('group2')">道路交通観測</button>
+        </div>
+        
+        <!-- グラフ表示エリア -->
+        <div class="card">
+            <div class="card-body">
+                <!-- メインタイトルと時間切り替えボタン -->
+                <div class="main-title-container">
+                    <div class="main-title-content">
+                        <h5 class="main-title" id="main-title">○○自動車道△△SA / 利用状況 - 通過台数・滞在時間 - 24時間別統計</h5>
+                        <!--<div class="current-time" id="current-time">現在時刻: <span id="time-display">--:--:--</span></div><-->
+                        <div class="update-info" id="update-info">最終更新: <span id="last-update">--:--:--</span></div>
+                    </div>
+                    <div class="time-switcher-container">
+                        <button class="btn-time-switcher active" onclick="changeTimeType('24h')">24時間表示</button>
+                        <button class="btn-time-switcher" onclick="changeTimeType('dayOfWeek')">曜日別表示</button>
+                    </div>
+                </div>
+                
+                <div class="charts-container" id="charts-container">
+                    <!-- グラフはJavaScriptで動的に生成 -->
+                </div>
+                
+                <!-- 座標表示エリア -->
+                <div class="coordinates-container">
+                    <div class="coordinates-title">分析データ:</div>
+                    <div id="coordinates-display">
+                        <div class="coordinate-line">
+                            <span class="coordinate-label">小型車両 通過台数:</span>
+                            <span class="coordinate-data" id="coord-small-main">データ読み込み中...</span>
+                        </div>
+                        <div class="coordinate-line">
+                            <span class="coordinate-label" id="coord-small-sub-label">小型車両 滞在時間:</span>
+                            <span class="coordinate-data" id="coord-small-sub">データ読み込み中...</span>
+                        </div>
+                        <div class="coordinate-line">
+                            <span class="coordinate-label">大型車両 通過台数:</span>
+                            <span class="coordinate-data" id="coord-large-main">データ読み込み中...</span>
+                        </div>
+                        <div class="coordinate-line">
+                            <span class="coordinate-label" id="coord-large-sub-label">大型車両 滞在時間:</span>
+                            <span class="coordinate-data" id="coord-large-sub">データ読み込み中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- フローティングメニュー -->
+    <div class="card float-menu">
+        <div class="card-body">
+            <nav class="nav flex-column">
+                <h6>Menu</h6>
+                <a class="nav-link" href="index.html">メイン</a>
+                <a class="nav-link" href="average.html">統計（平均）</a>
+                <a class="nav-link" href="table.html">統計（一覧）</a>
+                <a class="nav-link" href="reverse.html">統計（逆走）</a>
+                <a class="nav-link" href="passage.html">断面交通量</a>
+                <a class="nav-link" href="realtime.html">リアルタイムデータ分析</a>
+                <a class="nav-link" href="settings.html">設定</a>
+            </nav>
+        </div>
+    </div>
+
+    <script>
+    // チャートオブジェクトを管理する配列
+    let charts = [];
+    let currentView = 'group1'; // 現在の表示モード
+    let currentTimeType = '24h'; // 現在の時間タイプ（24h or dayOfWeek）
+    let timeUpdateInterval; // 時間更新用のインターバル
+    let chartUpdateInterval; // グラフ更新用のインターバル
+    let lastUpdateTime = null; // 最終更新時刻
+    let uploadedSmallData = null; // 小型車両用アップロードされたデータ
+    let uploadedLargeData = null; // 大型車両用アップロードされたデータ
+    let uploadedSmallStayTimeData = null; // 小型車両滞在時間用アップロードされたデータ
+    let uploadedLargeStayTimeData = null; // 大型車両滞在時間用アップロードされたデータ
+    let dataUpdateInterval; // データ更新用のインターバル
+    
+    // 各グラフの最新データを保持するオブジェクト
+    let latestData = {
+        smallMain: {labels: [], data: []},
+        smallSub: {labels: [], data: []},
+        largeMain: {labels: [], data: []},
+        largeSub: {labels: [], data: []}
+    };
+    
+    // 表示モード切り替え
+    function changeView(viewType) {
+        currentView = viewType;
+        updateMainTitle();
+        renderAllCharts();
+        resetChartUpdateTimer(); // タイマーリセット
+    }
+    
+    // メインタイトルを更新
+    function updateMainTitle() {
+        const titleElem = document.getElementById("main-title");
+        const timeTypeText = currentTimeType === '24h' ? '24時間別統計' : '曜日別統計';
+        
+        if (currentView === 'group1') {
+            titleElem.innerText = `○○自動車道△△SA / 利用状況 - 通過台数・滞在時間 - ${timeTypeText}`;
+            // サブタイトルを更新
+            document.getElementById('coord-small-sub-label').textContent = '小型車両 滞在時間:';
+            document.getElementById('coord-large-sub-label').textContent = '大型車両 滞在時間:';
+        } else {
+            titleElem.innerText = `□□号 / 道路交通観測 - 通過台数・車速 - ${timeTypeText}`;
+            // サブタイトルを更新
+            document.getElementById('coord-small-sub-label').textContent = '小型車両 車速:';
+            document.getElementById('coord-large-sub-label').textContent = '大型車両 車速:';
+        }
+    }
+    
+    // 時間タイプ切り替え
+    function changeTimeType(timeType) {
+        currentTimeType = timeType;
+        
+        // ボタンのアクティブ状態を更新
+        document.querySelectorAll('.btn-time-switcher').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        document.querySelectorAll('.btn-time-switcher').forEach(btn => {
+            if (btn.textContent.includes(timeType === '24h' ? '24時間' : '曜日別')) {
+                btn.classList.add('active');
+            }
+        });
+        
+        updateMainTitle();
+        renderAllCharts();
+        resetChartUpdateTimer(); // タイマーリセット
+    }
+    
+    // 現在時刻をフォーマットして返す（秒付き）
+    function getCurrentTimeString() {
+        const now = new Date();
+        return `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    }
+    
+    // 現在時刻を更新する関数
+    function updateCurrentTime() {
+        const timeDisplay = document.getElementById('time-display');
+        if (timeDisplay) {
+            const now = new Date();
+            timeDisplay.textContent = `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+        }
+    }
+    
+    // グラフ更新タイマーをリセット
+    function resetChartUpdateTimer() {
+        if (chartUpdateInterval) {
+            clearInterval(chartUpdateInterval);
+        }
+        
+        // 1秒ごとにグラフを更新
+        chartUpdateInterval = setInterval(() => {
+            updateAllCharts();
+        }, 1000); // 1000ms = 1秒
+    }
+    
+    // ファイルアップロード処理（小型車両用）
+    function handleSmallFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            // 最初のシートを取得
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            
+            // JSON形式に変換
+            uploadedSmallData = XLSX.utils.sheet_to_json(worksheet);
+            console.log("小型車両アップロードデータ:", uploadedSmallData);
+            
+            // データ更新タイマーを開始
+            if (dataUpdateInterval) {
+                clearInterval(dataUpdateInterval);
+            }
+            
+            dataUpdateInterval = setInterval(() => {
+                updateSmallMainChartFromData();
+            }, 10000); // 10秒ごとに更新
+            
+            // 即時更新
+            updateSmallMainChartFromData();
+        };
+        reader.readAsArrayBuffer(file);
+    }
+    
+    // ファイルアップロード処理（大型車両用）
+    function handleLargeFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            // 最初のシートを取得
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            
+            // JSON形式に変換
+            uploadedLargeData = XLSX.utils.sheet_to_json(worksheet);
+            console.log("大型車両アップロードデータ:", uploadedLargeData);
+            
+            // データ更新タイマーを開始
+            if (dataUpdateInterval) {
+                clearInterval(dataUpdateInterval);
+            }
+            
+            dataUpdateInterval = setInterval(() => {
+                updateLargeMainChartFromData();
+            }, 10000); // 10秒ごとに更新
+            
+            // 即時更新
+            updateLargeMainChartFromData();
+        };
+        reader.readAsArrayBuffer(file);
+    }
+    
+    // ファイルアップロード処理（小型車両滞在時間用）
+    function handleSmallStayTimeFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            // 最初のシートを取得
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            
+            // シートのデータを配列として取得（1行目がヘッダー、2行目がデータ）
+            const excelData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            if (excelData.length >= 2) {
+                // 1行目がx軸（時間帯）、2行目がy軸（滞在時間）
+                const timeSlots = excelData[0]; // 1行目: 時間帯
+                const stayTimes = excelData[1]; // 2行目: 滞在時間
+                
+                // データを格納
+                uploadedSmallStayTimeData = { timeSlots, stayTimes };
+                console.log("小型車両滞在時間アップロードデータ:", uploadedSmallStayTimeData);
+                
+                // 即時更新
+                updateSmallStayTimeChartFromData();
+            } else {
+                console.error("Excelファイルの形式が正しくありません。");
+                alert("Excelファイルの形式が正しくありません。1行目に時間帯、2行目に滞在時間が含まれていることを確認してください。");
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+    
+    // ファイルアップロード処理（大型車両滞在時間用）
+    function handleLargeStayTimeFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            // 最初のシートを取得
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            
+            // シートのデータを配陣として取得（1行目がヘッダー、2行目がデータ）
+            const excelData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            if (excelData.length >= 2) {
+                // 1行目がx軸（時間帯）、2行目がy軸（滞在時間）
+                const timeSlots = excelData[0]; // 1行目: 時間帯
+                const stayTimes = excelData[1]; // 2行目: 滞在時間
+                
+                // データを格納
+                uploadedLargeStayTimeData = { timeSlots, stayTimes };
+                console.log("大型車両滞在時間アップロードデータ:", uploadedLargeStayTimeData);
+                
+                // 即時更新
+                updateLargeStayTimeChartFromData();
+                
+                // 1時間ごとの更新タイマーを設定
+                setupHourlyUpdate();
+            } else {
+                console.error("Excelファイルの形式が正しくありません。");
+                alert("Excelファイルの形式が正しくありません。1行目に時間帯、2行目に滞在時間が含まれていることを確認してください。");
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+    
+    // 1時間ごとの更新タイマーを設定
+    function setupHourlyUpdate() {
+        // 既存のインターバルをクリア
+        if (dataUpdateInterval) {
+            clearInterval(dataUpdateInterval);
+        }
+        
+        // 次の時間の00分00秒まで待機してから1時間ごとに更新
+        const now = new Date();
+        const nextHour = new Date(now);
+        nextHour.setHours(now.getHours() + 1);
+        nextHour.setMinutes(0);
+        nextHour.setSeconds(0);
+        nextHour.setMilliseconds(0);
+        
+        const timeUntilNextHour = nextHour - now;
+        
+        console.log(`次の更新まで ${Math.round(timeUntilNextHour/1000)} 秒`);
+        
+        setTimeout(() => {
+            // 最初の更新
+            updateLargeStayTimeChartFromData();
+            
+            // その後1時間ごとに更新
+            dataUpdateInterval = setInterval(() => {
+                updateLargeStayTimeChartFromData();
+            }, 60 * 60 * 1000); // 1時間ごと
+        }, timeUntilNextHour);
+    }
+    
+    // 時間帯文字列から時間インデックスを取得
+    function getHourIndexFromTimeSlot(timeSlot) {
+        if (!timeSlot) return -1;
+        
+        // 「時台」の文字を除去して数字のみを抽出
+        const hourStr = timeSlot.replace('時台', '').trim();
+        const hour = parseInt(hourStr);
+        
+        // 数値かどうかチェック（0-23の範囲）
+        if (!isNaN(hour) && hour >= 0 && hour <= 23) {
+            return hour;
+        }
+        
+        return -1;
+    }
+    
+    // 時刻文字列を分単位に変換（比較用）
+    function timeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        
+        const parts = timeStr.split(':');
+        if (parts.length < 2) return 0;
+        
+        const hours = parseInt(parts[0]) || 0;
+        const minutes = parseInt(parts[1]) || 0;
+        const seconds = parseInt(parts[2]) || 0;
+        
+        return hours * 60 + minutes + seconds / 60;
+    }
+    
+    // 時間文字列を分単位に変換（滞在時間用）
+    function stayTimeToMinutes(stayTimeStr) {
+        if (!stayTimeStr) return 0;
+        
+        // 時間文字列が "時:分:秒" 形式かチェック
+        if (typeof stayTimeStr === 'string' && stayTimeStr.includes(':')) {
+            const parts = stayTimeStr.split(':');
+            const hours = parseInt(parts[0]) || 0;
+            const minutes = parseInt(parts[1]) || 0;
+            const seconds = parseInt(parts[2]) || 0;
+            
+            return hours * 60 + minutes + seconds / 60;
+        }
+        
+        // 数値の場合はそのまま返す（分単位と仮定）
+        return parseFloat(stayTimeStr) || 0;
+    }
+    
+    // アップロードデータから小型車両通過台数グラフを更新
+    function updateSmallMainChartFromData() {
+        if (!uploadedSmallData || uploadedSmallData.length === 0) return;
+        
+        // 現在時刻を获取
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinutes = now.getMinutes();
+        const currentSeconds = now.getSeconds();
+        const currentTotalMinutes = currentHour * 60 + currentMinutes + currentSeconds / 60;
+        
+        // 時間帯ごとのカウントを初期化（0-23時）
+        const hourlyCounts = Array(24).fill(0);
+        
+        console.log("現在時刻:", `${currentHour}:${currentMinutes}:${currentSeconds}`);
+        
+        // データを処理
+        uploadedSmallData.forEach(row => {
+            // 時刻と時間帯を取得
+            const time = row['時刻'];
+            const timeSlot = row['時間帯'];
+            
+            // 時間帯から時間インデックスを取得
+            const hourIndex = getHourIndexFromTimeSlot(timeSlot);
+            
+            if (hourIndex >= 0 && hourIndex <= 23) {
+                // 時刻を分単位に変換
+                const rowMinutes = timeToMinutes(time);
+                
+                // 現在時刻より前のデータのみカウント
+                if (hourIndex < currentHour || 
+                    (hourIndex === currentHour && rowMinutes <= currentTotalMinutes)) {
+                    hourlyCounts[hourIndex]++;
+                    console.log(`小型車両カウント追加: ${timeSlot} ${time} → 時間帯${hourIndex}時台`);
+                } else {
+                    console.log(`小型車両スキップ: ${timeSlot} ${time} (未来のデータ)`);
+                }
+            } else {
+                console.log(`無効な時間帯: ${timeSlot}`);
+            }
+        });
+        
+        console.log("小型車両時間帯別カウント:", hourlyCounts);
+        
+        // データを更新
+        if (charts[0]) {
+            charts[0].data.datasets[0].data = hourlyCounts;
+            charts[0].update({
+                duration: 800,
+                easing: 'easeOutQuart'
+            });
+            
+            // 最新データを保存
+            latestData.smallMain.data = hourlyCounts;
+            
+            // 座標表示を更新
+            updateCoordinatesDisplay();
+            
+            // 最終更新時刻を記録
+            lastUpdateTime = new Date();
+            updateLastUpdateTime();
+        }
+    }
+    
+    // アップロードデータから大型車両通過台数グラフを更新
+    function updateLargeMainChartFromData() {
+        if (!uploadedLargeData || uploadedLargeData.length === 0) return;
+        
+        // 現在時刻を获取
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinutes = now.getMinutes();
+        const currentSeconds = now.getSeconds();
+        const currentTotalMinutes = currentHour * 60 + currentMinutes + currentSeconds / 60;
+        
+        // 時間帯ごとのカウントを初期化（0-23時）
+        const hourlyCounts = Array(24).fill(0);
+        
+        console.log("現在時刻:", `${currentHour}:${currentMinutes}:${currentSeconds}`);
+        
+        // データを処理
+        uploadedLargeData.forEach(row => {
+            // 時刻と時間帯を取得
+            const time = row['時刻'];
+            const timeSlot = row['時間帯'];
+            
+            // 時間帯から時間インデックスを取得
+            const hourIndex = getHourIndexFromTimeSlot(timeSlot);
+            
+            if (hourIndex >= 0 && hourIndex <= 23) {
+                // 時刻を分単位に変換
+                const rowMinutes = timeToMinutes(time);
+                
+                // 現在時刻より前のデータのみカウント
+                if (hourIndex < currentHour || 
+                    (hourIndex === currentHour && rowMinutes <= currentTotalMinutes)) {
+                    hourlyCounts[hourIndex]++;
+                    console.log(`大型車両カウント追加: ${timeSlot} ${time} → 時間帯${hourIndex}時台`);
+                } else {
+                    console.log(`大型車両スキップ: ${timeSlot} ${time} (未来のデータ)`);
+                }
+            } else {
+                console.log(`無効な時間帯: ${timeSlot}`);
+            }
+        });
+        
+        console.log("大型車両時間帯別カウント:", hourlyCounts);
+        
+        // データを更新
+        if (charts[2]) {
+            charts[2].data.datasets[0].data = hourlyCounts;
+            charts[2].update({
+                duration: 800,
+                easing: 'easeOutQuart'
+            });
+            
+            // 最新データを保存
+            latestData.largeMain.data = hourlyCounts;
+            
+            // 座標表示を更新
+            updateCoordinatesDisplay();
+            
+            // 最終更新時刻を記録
+            lastUpdateTime = new Date();
+            updateLastUpdateTime();
+        }
+    }
+    
+    // アップロードデータから小型車両滞在時間グラフを更新
+    function updateSmallStayTimeChartFromData() {
+        if (!uploadedSmallStayTimeData) return;
+        
+        const { timeSlots, stayTimes } = uploadedSmallStayTimeData;
+        
+        // 現在時刻を获取
+        const now = new Date();
+        const currentHour = now.getHours();
+        
+        // 滞在時間データを初期化（0-23時）
+        const hourlyStayTimes = Array(24).fill(0);
+        const hourlyDataCount = Array(24).fill(0); // 各時間帯のデータ数をカウント
+        
+        console.log("現在時刻の時間帯:", currentHour);
+        console.log("Excelの時間帯データ:", timeSlots);
+        console.log("Excelの滞在時間データ:", stayTimes);
+        
+        // データを処理
+        for (let i = 0; i < timeSlots.length; i++) {
+            const timeSlot = timeSlots[i];
+            const stayTime = stayTimes[i];
+            
+            // 時間帯から時間インデックスを取得
+            const hourIndex = getHourIndexFromTimeSlot(timeSlot);
+            
+            if (hourIndex >= 0 && hourIndex <= 23) {
+                // 滞在時間を分単位に変換
+                const stayTimeMinutes = stayTimeToMinutes(stayTime);
+                
+                // 現在時刻より前の時間帯のデータのみ反映
+                if (hourIndex <= currentHour) {
+                    hourlyStayTimes[hourIndex] += stayTimeMinutes;
+                    hourlyDataCount[hourIndex]++;
+                    console.log(`滞在時間データ追加: ${timeSlot} ${stayTime} → 時間帯${hourIndex}時台`);
+                } else {
+                    console.log(`滞在時間データスキップ: ${timeSlot} ${stayTime} (未来の時間帯)`);
+                }
+            } else {
+                console.log(`無効な時間帯: ${timeSlot}`);
+            }
+        }
+        
+        // 平均滞在時間を計算
+        for (let i = 0; i < 24; i++) {
+            if (hourlyDataCount[i] > 0) {
+                hourlyStayTimes[i] = hourlyStayTimes[i] / hourlyDataCount[i];
+            }
+        }
+        
+        console.log("小型車両時間帯別滞在時間:", hourlyStayTimes);
+        
+        // データを更新
+        if (charts[1]) {
+            charts[1].data.datasets[0].data = hourlyStayTimes;
+            charts[1].update({
+                duration: 800,
+                easing: 'easeOutQuart'
+            });
+            
+            // 最新データを保存
+            latestData.smallSub.data = hourlyStayTimes;
+            
+            // 座標表示を更新
+            updateCoordinatesDisplay();
+            
+            // 最終更新時刻を記録
+            lastUpdateTime = new Date();
+            updateLastUpdateTime();
+        }
+    }
+    
+    // アップロードデータから大型車両滞在時間グラフを更新
+    function updateLargeStayTimeChartFromData() {
+        if (!uploadedLargeStayTimeData) return;
+        
+        const { timeSlots, stayTimes } = uploadedLargeStayTimeData;
+        
+        // 現在時刻を获取
+        const now = new Date();
+        const currentHour = now.getHours();
+        
+        // 滞在時間データを初期化（0-23時）
+        const hourlyStayTimes = Array(24).fill(0);
+        const hourlyDataCount = Array(24).fill(0); // 各時間帯のデータ数をカウント
+        
+        console.log("現在時刻の時間帯:", currentHour);
+        console.log("Excelの時間帯データ:", timeSlots);
+        console.log("Excelの滞在時間データ:", stayTimes);
+        
+        // データを処理
+        for (let i = 0; i < timeSlots.length; i++) {
+            const timeSlot = timeSlots[i];
+            const stayTime = stayTimes[i];
+            
+            // 時間帯から時間インデックスを取得
+            const hourIndex = getHourIndexFromTimeSlot(timeSlot);
+            
+            if (hourIndex >= 0 && hourIndex <= 23) {
+                // 滞在時間を分単位に変換
+                const stayTimeMinutes = stayTimeToMinutes(stayTime);
+                
+                // 現在時刻より前の時間帯のデータのみ反映
+                if (hourIndex <= currentHour) {
+                    hourlyStayTimes[hourIndex] += stayTimeMinutes;
+                    hourlyDataCount[hourIndex]++;
+                    console.log(`大型車両滞在時間データ追加: ${timeSlot} ${stayTime} → 時間帯${hourIndex}時台`);
+                } else {
+                    console.log(`大型車両滞在時間データスキップ: ${timeSlot} ${stayTime} (未来の時間帯)`);
+                }
+            } else {
+                console.log(`無効な時間帯: ${timeSlot}`);
+            }
+        }
+        
+        // 平均滞在時間を計算
+        for (let i = 0; i < 24; i++) {
+            if (hourlyDataCount[i] > 0) {
+                hourlyStayTimes[i] = hourlyStayTimes[i] / hourlyDataCount[i];
+            }
+        }
+        
+        console.log("大型車両時間帯別滞在時間:", hourlyStayTimes);
+        
+        // データを更新
+        if (charts[3]) {
+            charts[3].data.datasets[0].data = hourlyStayTimes;
+            charts[3].update({
+                duration: 800,
+                easing: 'easeOutQuart'
+            });
+            
+            // 最新データを保存
+            latestData.largeSub.data = hourlyStayTimes;
+            
+            // 座標表示を更新
+            updateCoordinatesDisplay();
+            
+            // 最終更新時刻を記録
+            lastUpdateTime = new Date();
+            updateLastUpdateTime();
+        }
+    }
+    
+    // すべてのチャートを描画
+    function renderAllCharts() {
+        // チャートコンテナをクリア
+        const container = document.getElementById("charts-container");
+        container.innerHTML = '';
+        
+        // 既存のチャートを破棄
+        charts.forEach(chart => {
+            if (chart) chart.destroy();
+        });
+        charts = [];
+        
+        // 4つのチャートを生成（左右レイアウト）
+        const chartConfigs = [
+            { 
+                position: 'left', 
+                type: 'main', 
+                carType: 'small', 
+                title: '小型車両 通過台数',
+                hasUpload: true // アップロードボタン表示フラグ
+            },
+            { 
+                position: 'right', 
+                type: 'sub', 
+                carType: 'small', 
+                title: currentView === 'group1' ? '小型車両 滞在時間' : '小型車両 車速',
+                hasUpload: currentView === 'group1' // 滞在時間グラフにもアップロードボタンを追加
+            },
+            { 
+                position: 'left', 
+                type: 'main', 
+                carType: 'large', 
+                title: '大型車両 通過台数',
+                hasUpload: true // アップロードボタン表示フラグ
+            },
+            { 
+                position: 'right', 
+                type: 'sub', 
+                carType: 'large', 
+                title: currentView === 'group1' ? '大型車両 滞在時間' : '大型車両 車速',
+                hasUpload: currentView === 'group1' // 滞在時間グラフにもアップロードボタンを追加
+            }
+        ];
+        
+        chartConfigs.forEach((config, index) => {
+            const chartBox = document.createElement('div');
+            chartBox.className = 'chart-box';
+            
+            // チャートヘッダー
+            const chartHeader = document.createElement('div');
+            chartHeader.className = 'chart-header';
+            
+            const chartTitle = document.createElement('div');
+            chartTitle.className = 'chart-title';
+            chartTitle.innerText = config.title;
+            
+            chartHeader.appendChild(chartTitle);
+            
+            // アップロードボタンを追加（通過台数と滞在時間の場合）
+            if (config.hasUpload && currentView === 'group1') {
+                const uploadContainer = document.createElement('div');
+                
+                const uploadBtn = document.createElement('button');
+                uploadBtn.className = 'upload-btn';
+                uploadBtn.innerText = 'Excelアップロード';
+                
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.className = 'file-input';
+                fileInput.accept = '.xlsx, .xls';
+                
+                // 小型車両通過台数、小型車両滞在時間、大型車両通過台数、大型車両滞在時間で異なるハンドラーを設定
+                if (config.carType === 'small' && config.type === 'main') {
+                    uploadBtn.onclick = () => document.getElementById('small-file-input').click();
+                    fileInput.id = 'small-file-input';
+                    fileInput.onchange = handleSmallFileUpload;
+                } else if (config.carType === 'small' && config.type === 'sub') {
+                    uploadBtn.onclick = () => document.getElementById('small-staytime-file-input').click();
+                    fileInput.id = 'small-staytime-file-input';
+                    fileInput.onchange = handleSmallStayTimeFileUpload;
+                } else if (config.carType === 'large' && config.type === 'main') {
+                    uploadBtn.onclick = () => document.getElementById('large-file-input').click();
+                    fileInput.id = 'large-file-input';
+                    fileInput.onchange = handleLargeFileUpload;
+                } else if (config.carType === 'large' && config.type === 'sub') {
+                    uploadBtn.onclick = () => document.getElementById('large-staytime-file-input').click();
+                    fileInput.id = 'large-staytime-file-input';
+                    fileInput.onchange = handleLargeStayTimeFileUpload;
+                }
+                
+                uploadContainer.appendChild(uploadBtn);
+                uploadContainer.appendChild(fileInput);
+                chartHeader.appendChild(uploadContainer);
+            }
+            
+            // チャートコンテナ
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'chart-container';
+            const canvas = document.createElement('canvas');
+            chartContainer.appendChild(canvas);
+            
+            chartBox.appendChild(chartHeader);
+            chartBox.appendChild(chartContainer);
+            container.appendChild(chartBox);
+            
+            // チャートを描画
+            const dataType = config.type === 'main' ? 'main' : (currentView === 'group1' ? 'stayTime' : 'speed');
+            
+            // 通過台数で、データがアップロードされている場合
+            if (config.type === 'main' && 
+                ((config.carType === 'small' && uploadedSmallData) || 
+                 (config.carType === 'large' && uploadedLargeData))) {
+                
+                // データ更新処理を呼び出し
+                if (config.carType === 'small') {
+                    updateSmallMainChartFromData();
+                } else {
+                    updateLargeMainChartFromData();
+                }
+                
+                // ダミーデータで初期化（後で更新）
+                const dummyData = generateDummyData(config.carType, currentTimeType, dataType);
+                renderMainChart(dummyData, currentTimeType, canvas, '通過台数', index);
+            } 
+            // 滞在時間で、データがアップロードされている場合
+            else if (config.type === 'sub' && 
+                     currentView === 'group1' && 
+                     ((config.carType === 'small' && uploadedSmallStayTimeData) || 
+                      (config.carType === 'large' && uploadedLargeStayTimeData))) {
+                
+                // データ更新処理を呼び出し
+                if (config.carType === 'small') {
+                    updateSmallStayTimeChartFromData();
+                } else {
+                    updateLargeStayTimeChartFromData();
+                }
+                
+                // ダミーデータで初期化（後で更新）
+                const dummyData = generateDummyData(config.carType, currentTimeType, dataType);
+                renderStayTimeChart(dummyData, canvas, index);
+            }
+            else {
+                const dummyData = generateDummyData(config.carType, currentTimeType, dataType);
+                
+                // 最新データを保存
+                if (config.carType === 'small' && config.type === 'main') {
+                    latestData.smallMain.data = dummyData;
+                } else if (config.carType === 'small' && config.type === 'sub') {
+                    latestData.smallSub.data = dummyData;
+                } else if (config.carType === 'large' && config.type === 'main') {
+                    latestData.largeMain.data = dummyData;
+                } else if (config.carType === 'large' && config.type === 'sub') {
+                    latestData.largeSub.data = dummyData;
+                }
+                
+                if (config.type === 'main') {
+                    renderMainChart(dummyData, currentTimeType, canvas, '通過台数', index);
+                } else if (currentView === 'group1') {
+                    renderStayTimeChart(dummyData, canvas, index);
+                } else {
+                    renderSpeedChart(dummyData, currentTimeType, canvas, index);
+                }
+            }
+        });
+        
+        // 座標表示を更新
+        updateCoordinatesDisplay();
+    }
+    
+    // ダミーデータ生成（初期表示用）
+    function generateDummyData(carType, timeType, dataType) {
+        if (timeType === '24h') {
+            return Array(24).fill(0).map(() => {
+                if (dataType === 'main') {
+                    // 通過台数
+                    return Math.floor(Math.random() * 100);
+                } else if (dataType === 'stayTime') {
+                    // 滞在時間（分単位）
+                    return Math.floor(Math.random() * 60) + 10;
+                } else {
+                    // 車速（km/h）
+                    return Math.floor(Math.random() * 40) + 60;
+                }
+            });
+        } else {
+            // 曜日別表示
+            return Array(7).fill(0).map(() => {
+                if (dataType === 'main') {
+                    // 通過台数
+                    return Math.floor(Math.random() * 500) + 100;
+                } else if (dataType === 'stayTime') {
+                    // 滞在時間（分単位）
+                    return Math.floor(Math.random() * 60) + 10;
+                } else {
+                    // 車速（km/h）
+                    return Math.floor(Math.random() * 40) + 60;
+                }
+            });
+        }
+    }
+    
+    // 通過台数チャートを描画
+    function renderMainChart(data, timeType, canvas, label, index) {
+        const labels = timeType === '24h' 
+            ? Array(24).fill(0).map((_, i) => `${i}時台`)
+            : ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
+        
+        const ctx = canvas.getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '通過台数'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        charts[index] = chart;
+    }
+    
+    // 滞在時間チャートを描画
+    function renderStayTimeChart(data, canvas, index) {
+        const labels = Array(24).fill(0).map((_, i) => `${i}時台`);
+        
+        const ctx = canvas.getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '滞在時間',
+                    data: data,
+                    fill: false,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    tension: 0.1,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '滞在時間の中央値（分）'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        charts[index] = chart;
+    }
+    
+    // 車速チャートを描画
+    function renderSpeedChart(data, timeType, canvas, index) {
+        const labels = timeType === '24h' 
+            ? Array(24).fill(0).map((_, i) => `${i}時台`)
+            : ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
+        
+        const ctx = canvas.getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '車速',
+                    data: data,
+                    fill: false,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.1,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'km/h'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        charts[index] = chart;
+    }
+    
+    // すべてのチャートを更新
+    function updateAllCharts() {
+        charts.forEach((chart, index) => {
+            if (chart) {
+                // データ更新
+                if (index === 0 && uploadedSmallData) {
+                    updateSmallMainChartFromData();
+                } else if (index === 1 && uploadedSmallStayTimeData) {
+                    updateSmallStayTimeChartFromData();
+                } else if (index === 2 && uploadedLargeData) {
+                    updateLargeMainChartFromData();
+                } else if (index === 3 && uploadedLargeStayTimeData) {
+                    updateLargeStayTimeChartFromData();
+                } else {
+                    // アップロードデータがない場合はランダムデータで更新
+                    const newData = chart.data.datasets[0].data.map(value => {
+                        if (index === 0 || index === 2) {
+                            // 通過台数
+                            return Math.max(0, value + Math.floor(Math.random() * 20) - 10);
+                        } else if (currentView === 'group1') {
+                            // 滞在時間
+                            return Math.max(5, value + Math.floor(Math.random() * 10) - 5);
+                        } else {
+                            // 車速
+                            return Math.max(40, value + Math.floor(Math.random() * 10) - 5);
+                        }
+                    });
+                    
+                    chart.data.datasets[0].data = newData;
+                    
+                    // 最新データを保存
+                    if (index === 0) {
+                        latestData.smallMain.data = newData;
+                    } else if (index === 1) {
+                        latestData.smallSub.data = newData;
+                    } else if (index === 2) {
+                        latestData.largeMain.data = newData;
+                    } else if (index === 3) {
+                        latestData.largeSub.data = newData;
+                    }
+                    
+                    chart.update({
+                        duration: 800,
+                        easing: 'easeOutQuart'
+                    });
+                }
+            }
+        });
+        
+        // 座標表示を更新
+        updateCoordinatesDisplay();
+        
+        // 最終更新時刻を記録
+        lastUpdateTime = new Date();
+        updateLastUpdateTime();
+    }
+    
+    // 座標表示を更新
+    function updateCoordinatesDisplay() {
+        // 小型車両 通過台数
+        const smallMainElem = document.getElementById('coord-small-main');
+        if (smallMainElem && latestData.smallMain.data.length > 0) {
+            const total = latestData.smallMain.data.reduce((sum, value) => sum + value, 0);
+            smallMainElem.textContent = `合計: ${total}台`;
+        }
+        
+        // 小型車両 滞在時間/車速
+        const smallSubElem = document.getElementById('coord-small-sub');
+        if (smallSubElem && latestData.smallSub.data.length > 0) {
+            const avg = latestData.smallSub.data.reduce((sum, value) => sum + value, 0) / latestData.smallSub.data.length;
+            if (currentView === 'group1') {
+                smallSubElem.textContent = `平均: ${avg.toFixed(1)}分`;
+            } else {
+                smallSubElem.textContent = `平均: ${avg.toFixed(1)}km/h`;
+            }
+        }
+        
+        // 大型車両 通過台数
+        const largeMainElem = document.getElementById('coord-large-main');
+        if (largeMainElem && latestData.largeMain.data.length > 0) {
+            const total = latestData.largeMain.data.reduce((sum, value) => sum + value, 0);
+            largeMainElem.textContent = `合計: ${total}台`;
+        }
+        
+        // 大型車両 滞在時間/車速
+        const largeSubElem = document.getElementById('coord-large-sub');
+        if (largeSubElem && latestData.largeSub.data.length > 0) {
+            const avg = latestData.largeSub.data.reduce((sum, value) => sum + value, 0) / latestData.largeSub.data.length;
+            if (currentView === 'group1') {
+                largeSubElem.textContent = `平均: ${avg.toFixed(1)}分`;
+            } else {
+                largeSubElem.textContent = `平均: ${avg.toFixed(1)}km/h`;
+            }
+        }
+    }
+    
+    // 最終更新時刻を更新
+    function updateLastUpdateTime() {
+        const lastUpdateElem = document.getElementById('last-update');
+        if (lastUpdateElem && lastUpdateTime) {
+            lastUpdateElem.textContent = `${lastUpdateTime.getFullYear()}/${(lastUpdateTime.getMonth()+1).toString().padStart(2, '0')}/${lastUpdateTime.getDate().toString().padStart(2, '0')} ${lastUpdateTime.getHours().toString().padStart(2, '0')}:${lastUpdateTime.getMinutes().toString().padStart(2, '0')}:${lastUpdateTime.getSeconds().toString().padStart(2, '0')}`;
+        }
+    }
+    
+    // 初期化処理
+    function init() {
+        // 現在時刻の更新を開始
+        updateCurrentTime();
+        timeUpdateInterval = setInterval(updateCurrentTime, 1000); // 1秒ごとに更新
+        
+        // 初期描画
+        renderAllCharts();
+        
+        // グラフ更新タイマーを開始
+        resetChartUpdateTimer();
+        
+        // 最終更新時刻を設定
+        lastUpdateTime = new Date();
+        updateLastUpdateTime();
+    }
+    
+    // ページ読み込み完了後に初期化
+    window.addEventListener('load', init);
+    </script>
+</body>
+</html>

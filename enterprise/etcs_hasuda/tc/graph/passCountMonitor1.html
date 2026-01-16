@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display</title>
+
+    <!-- CSS読み込み -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <style>
+        .title-section {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .main-title {
+            font-size: 4rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 0;
+        }
+
+        .current-time {
+            font-size: 3rem;
+            text-align: right;
+            /* margin-top: 2px 0 1px 0; タイトルとの間隔調整 */
+        }
+
+        .card-title-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+        }
+
+        .last-received {
+            font-size: 1.8rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- bootstrap js読み込み -->
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <!-- 自作関数読込み -->
+    <script src="./js/script.js"></script>
+
+    <div class="container my-2">
+        <!-- タイトルと時刻表示セクション -->
+        <div class="title-section">
+            <div class="row">
+                <div>
+                    <h1 class="main-title">ＥＴＣトラカン 断面交通量モニター</h1>
+                </div>
+            </div>
+            <div>
+                <div>
+                    <tr>
+                        <th>
+                            <button type="button" class="btn btn-danger py-2 px-4 me-5 font-2rem"
+                                onclick="sendPassageResetCmd()">リセット</button>
+                        </th>
+                        <th>
+
+                            <div id="current-time" class="current-time">-</div>
+                        </th>
+
+                    </tr>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="card-title-section">
+                    <h4 class="card-title">アンテナ1号機</h4>
+                    <div class="last-received">最終受信: <span id="ant-1-last">-</span></div>
+                </div>
+                <div class="row mt-1 position-relative">
+                    <div class="col font-6_5rem text-center">
+                        <span id="ant-1-cnt">-</span>台
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-2">
+            <div class="card-body">
+                <div class="card-title-section">
+                    <h4 class="card-title">アンテナ2号機</h4>
+                    <div class="last-received">最終受信: <span id="ant-2-last">-</span></div>
+                </div>
+                <div class="row mt-1 position-relative">
+                    <div class="col font-6_5rem text-center">
+                        <span id="ant-2-cnt">-</span>台
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="card-title-section">
+                    <h4 class="card-title">アンテナ3号機</h4>
+                    <div class="last-received">最終受信: <span id="ant-3-last">-</span></div>
+                </div>
+                <div class="row mt-1 position-relative">
+                    <div class="col font-6_5rem text-center">
+                        <span id="ant-3-cnt">-</span>台
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-2">
+            <button type="button" class="btn btn-danger py-2 px-4 me-5 font-2rem"
+                onclick="sendPassageResetCmd()">リセット</button>
+        </div>
+    </div>
+
+    <script>
+        // 現在時刻を更新する関数
+        function updateCurrentTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            const formattedTime = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+            document.getElementById('current-time').textContent = formattedTime;
+        }
+
+        // 最終受信時刻を初期表示（現在時刻で表示）
+        function initializeLastReceivedTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            const formattedTime = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+
+            document.getElementById('ant-1-last').textContent = formattedTime;
+            document.getElementById('ant-2-last').textContent = formattedTime;
+            document.getElementById('ant-3-last').textContent = formattedTime;
+        }
+
+        // ページ読み込み時に時刻を表示し、1秒ごとに更新
+        document.addEventListener('DOMContentLoaded', function () {
+            updateCurrentTime();
+            initializeLastReceivedTime();
+            setInterval(updateCurrentTime, 1000);
+        });
+    </script>
+</body>
+
+</html>

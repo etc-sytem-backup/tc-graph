@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通過履歴データ表示</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9f7e9;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>通過履歴データ（小型 アンテナ1）</h1>
+        <div id="csv-data"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const csvDataContainer = document.getElementById('csv-data');
+            csvDataContainer.innerHTML = '<div class="loading">CSVデータを読み込んでいます...</div>';
+            
+            // CSVファイル名
+            const csvFileName = '通過履歴_小型_アンテナ1_100件_2025916.csv';
+            
+            fetch(csvFileName)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('ファイルの読み込みに失敗しました');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // CSVデータの解析
+                    const rows = data.split('\n');
+                    let tableHTML = '<table>';
+                    
+                    // ヘッダー行の処理
+                    const headerRow = rows[0].split(',');
+                    tableHTML += '<thead><tr>';
+                    for (let i = 0; i < headerRow.length; i++) {
+                        // 空のカラムをスキップ
+                        if (headerRow[i].trim() !== '') {
+                            tableHTML += `<th>${headerRow[i]}</th>`;
+                        }
+                    }
+                    tableHTML += '</tr></thead><tbody>';
+                    
+                    // データ行の処理
+                    for (let i = 1; i < rows.length; i++) {
+                        const cells = rows[i].split(',');
+                        
+                        // 空行をスキップ
+                        if (cells.length <= 1 || cells.join('').trim() === '') continue;
+                        
+                        tableHTML += '<tr>';
+                        for (let j = 0; j < cells.length; j++) {
+                            // ヘッダーと同じ数のカラムのみ表示
+                            if (j < headerRow.length && headerRow[j].trim() !== '') {
+                                tableHTML += `<td>${cells[j]}</td>`;
+                            }
+                        }
+                        tableHTML += '</tr>';
+                    }
+                    
+                    tableHTML += '</tbody></table>';
+                    csvDataContainer.innerHTML = tableHTML;
+                })
+                .catch(error => {
+                    csvDataContainer.innerHTML = `<div class="error">エラー: ${error.message}</div>`;
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+</html>

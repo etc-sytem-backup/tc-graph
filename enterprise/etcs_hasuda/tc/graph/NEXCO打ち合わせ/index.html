@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display</title>
+
+    <!-- CSS読み込み -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+    <!-- bootstrap js読み込み -->
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <!-- 自作関数読込み -->
+    <script src="./js/script.js"></script>
+
+    <div class="container my-2">
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title">満空率：大型車</h4>
+                <div class="row mt-1 position-relative">
+                    <div id="l-mansya-flag" class="font-6_5rem text-danger position-absolute top-0 start-0 w-fit-content"></div>
+                    <div id="l-manku-ratio" class="col text-primary font-6_5rem pl-7rem text-center"></div>
+                    <div class="col-auto me-2 font-6_5rem text-center">
+                        <span id="l-car-cnt"></span> / <span id="l-park-cnt"></span>
+                    </div>
+                    <div class="col-auto me-2 d-flex flex-column">
+                        <button onclick="plusLCarCnt()" class="btn btn-primary mb-2">＋</button>
+                        <button onclick="minusLCarCnt()" class="btn btn-primary">－</button>
+                    </div>
+                </div>
+              </div>
+        </div>
+
+        <div class="card mt-2">
+            <div class="card-body">
+                <h4 class="card-title">満空率：小型車</h4>
+                <div class="row mt-1 position-relative">
+                    <div id="s-mansya-flag" class="font-6_5rem text-danger position-absolute top-0 start-0 w-fit-content"></div>
+                    <div id="s-manku-ratio" class="col text-primary font-6_5rem pl-7rem text-center"></div>
+                    <div class="col-auto me-2 font-6_5rem text-center">
+                        <span id="s-car-cnt"></span> / <span id="s-park-cnt"></span>
+                    </div>
+                    <div class="col-auto me-2 d-flex flex-column">
+                        <button onclick="plusSCarCnt()" class="btn btn-primary mb-2">＋</button>
+                        <button onclick="minusSCarCnt()" class="btn btn-primary">－</button>
+                    </div>
+                </div>
+              </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title">超過駐車台数</h4>
+                <div class="row">
+                    <div class="col">
+                        <div class="card mt-1">
+                            <div class="card-body">
+                                <h4 class="card-title">大型車</h4>
+                                <div id="l-tyouka-cnt" class="font-5rem text-center"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card mt-1">
+                            <div class="card-body">
+                                <h4 class="card-title">小型車</h4>
+                                <div id="s-tyouka-cnt" class="font-5rem text-center"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title">駐車パス台数</h4>
+                <div class="row">
+                    <div class="col">
+                        <div class="card mt-1">
+                            <div class="card-body">
+                                <h4 class="card-title">大型車</h4>
+                                <div id="l-pass-cnt" class="font-5rem text-center"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card mt-1">
+                            <div class="card-body">
+                                <h4 class="card-title">小型車</h4>
+                                <div id="s-pass-cnt" class="font-5rem text-center"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
+            </div>
+        </div>
+        <div class="text-center mt-4 lh-base">
+            <button type="button" class="btn btn-danger py-2 px-4 me-5 font-2rem" onclick="if(confirm('電波停止しても良いですか？')) { sendRadioStopCmd() }">電波停止</button>
+            <button type="button" class="btn btn-primary py-2 px-4 me-5 font-2rem" onclick="sendRadioStartCmd()">電波発射</button>
+            <span class="py-2 font-2rem inline-block align-middle">最終受信時の電波状態：<span id="radio-status">-</span></span>
+            <div class="rsu-connect py-2 px-4 font-1rem" role="alert">
+            </div>
+        </div>
+        <div class="last-receive-time">
+            最終受信：
+            <span id="last-receive-time-main">---</span>
+        </div>
+    </div>
+    <div class="card float-menu">
+        <div class="card-body">
+            <nav class="nav flex-column">
+                <h6>Menu</h6>
+                <a class="nav-link" href="index.html">メイン</a>
+                <a class="nav-link" href="average.html">統計（平均）</a>
+                <a class="nav-link" href="table.html">統計（一覧）</a>
+                <a class="nav-link" href="reverse.html">統計（逆走）</a>
+                <a class="nav-link" href="passage.html">断面交通量</a>
+                <a class="nav-link" href="realtime.html">リアルタイムデータ分析</a>
+                <a class="nav-link" href="settings.html">設定</a>
+            </nav>
+        </div>
+    </div>
+</body>
+</html>
